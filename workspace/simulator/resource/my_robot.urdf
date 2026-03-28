@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot name="Webots">
     <webots>
-        <plugin type="webots_ros2_driver::Ros2IMU">
+        <!-- <plugin type="webots_ros2_driver::Ros2IMU">
             <enabled>True</enabled>
             <updateRate>200</updateRate>
             <topicName>/imu</topicName>
@@ -10,7 +10,7 @@
             <inertialUnitName>imu</inertialUnitName>
             <gyroName>gyr</gyroName>
             <accelerometerName>acc</accelerometerName>
-        </plugin>
+        </plugin> -->
         <plugin type="simulator.robot_driver.main" />
     </webots>
 </robot>

@@ -8,7 +8,7 @@ from rosgraph_msgs.msg import Clock
 HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.123
 LX = 0.2045 #lateral distance from robot's COM to wheel [m].
-LY =0.2225 #longitudinal distance from robot's COM to wheel [m].
+LY = 0.2225 #longitudinal distance from robot's COM to wheel [m].
 target_speed = {'x': 1.0, 'y': 1.0, 'z': 1.0}
 
 
@@ -36,8 +36,10 @@ class main:
         self.__node = rclpy.create_node('robot_driver')
         self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
 
+        self.__target_twist = Twist()  # ✅ 추가
+
     def __cmd_vel_callback(self, twist):
-       self.__target_twist = twist
+        self.__target_twist = twist
 
     def step(self):
         rclpy.spin_once(self.__node, timeout_sec=0)
@@ -55,9 +57,8 @@ class main:
 
 
 def mecanumControl(vx, vy, wz):
-    fl = 1 / WHEEL_RADIUS * (vx - vy - ((LY + LY) * wz) )
-    fr = 1 / WHEEL_RADIUS * (vx + vy - ((LY + LY) * wz) )
-    bl = 1 / WHEEL_RADIUS * (vx + vy + ((LY + LY) * wz) )
-    br = 1 / WHEEL_RADIUS * (vx - vy + ((LY + LY) * wz) )
+    fl = 1 / WHEEL_RADIUS * (vx - vy - ((LY + LY) * wz))
+    fr = 1 / WHEEL_RADIUS * (vx + vy - ((LY + LY) * wz))
+    bl = 1 / WHEEL_RADIUS * (vx + vy + ((LY + LY) * wz))
+    br = 1 / WHEEL_RADIUS * (vx - vy + ((LY + LY) * wz))
     return fl, fr, bl, br
-

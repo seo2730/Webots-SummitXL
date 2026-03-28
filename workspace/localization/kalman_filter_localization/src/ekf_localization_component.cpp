@@ -89,7 +89,7 @@ EkfLocalizationComponent::EkfLocalizationComponent(const rclcpp::NodeOptions & o
 
   tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-  set_on_parameters_set_callback(
+  param_callback_handle_ = this->add_on_set_parameters_callback(
     [this](const std::vector<rclcpp::Parameter> params)
     -> rcl_interfaces::msg::SetParametersResult
     {

@@ -46,8 +46,8 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 
-#include <tf2/transform_datatypes.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/transform_datatypes.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace octomap {
     /**

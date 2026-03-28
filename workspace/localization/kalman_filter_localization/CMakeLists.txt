@@ -60,7 +60,7 @@ src/ekf_localization_component.cpp
 
 target_compile_definitions(ekf_localization_component PRIVATE "KFL_EKFL_BUILDING_DLL")
 ament_target_dependencies(ekf_localization_component
-  rclcpp rclcpp_components nav_msgs sensor_msgs tf2 tf2_eigen tf2_geometry_msgs)
+  rclcpp rclcpp_components nav_msgs sensor_msgs tf2_ros tf2_eigen tf2_sensor_msgs tf2_geometry_msgs)
 
 add_executable(ekf_localization_node
 src/ekf_localization_node.cpp
@@ -70,7 +70,7 @@ target_link_libraries(ekf_localization_node
 ekf_localization_component)
 
 ament_target_dependencies(ekf_localization_node
-  rclcpp rclcpp_components nav_msgs sensor_msgs tf2 tf2_eigen tf2_geometry_msgs)
+  rclcpp rclcpp_components nav_msgs sensor_msgs tf2_ros tf2_eigen tf2_sensor_msgs tf2_geometry_msgs)
 
 include_directories(
   include

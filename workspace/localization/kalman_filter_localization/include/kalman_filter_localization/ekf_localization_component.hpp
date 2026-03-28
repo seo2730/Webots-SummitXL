@@ -80,15 +80,15 @@ extern "C" {
 #include "geometry_msgs/msg/point_stamped.hpp"
 #include <sensor_msgs/msg/imu.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <tf2/transform_datatypes.h>
-#include <tf2/convert.h>
-#include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2_eigen/tf2_eigen.h>
-#include <tf2_ros/buffer.h>
-#include "tf2_ros/transform_broadcaster.h"
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
+#include <tf2/transform_datatypes.hpp>
+#include <tf2/convert.hpp>
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
+#include <tf2_ros/buffer.hpp>
+#include "tf2_ros/transform_broadcaster.hpp"
+#include <tf2_ros/transform_listener.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 
 #include <rclcpp_components/register_node_macro.hpp>
 
@@ -148,7 +148,7 @@ private:
 
   geometry_msgs::msg::PoseStamped current_pose_odom_;
   Eigen::Matrix4d previous_odom_mat_{Eigen::Matrix4d::Identity()};
-
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 
   enum STATE
   {

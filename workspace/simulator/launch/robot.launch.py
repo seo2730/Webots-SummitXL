@@ -25,9 +25,9 @@ def generate_launch_description():
     world = LaunchConfiguration('world')
     robot_description = pathlib.Path(os.path.join(package_dir, 'resource', 'my_robot.urdf')).read_text()
 
-    webots = WebotsLauncher(
-        world=PathJoinSubstitution([package_dir, 'worlds', world])
-    )
+    # webots = WebotsLauncher(
+    #     world=PathJoinSubstitution([package_dir, 'worlds', world])
+    # )
 
     webots_ros2_driver = Node(
         package='webots_ros2_driver',
@@ -59,16 +59,16 @@ def generate_launch_description():
             'world',
             default_value='my_world.wbt',
         ),
-        webots,
+        # webots,
         webots_ros2_driver,
         robot_state_publisher,
         vlp_publisher,
-        launch.actions.RegisterEventHandler(
-            event_handler=launch.event_handlers.OnProcessExit(
-                target_action=webots,
-                on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
-            )
-        ),
+        # launch.actions.RegisterEventHandler(
+        #     event_handler=launch.event_handlers.OnProcessExit(
+        #         target_action=webots,
+        #         on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
+        #     )
+        # ),
         Node(
             package='pointcloud_to_laserscan', executable='pointcloud_to_laserscan_node',
             remappings=[('cloud_in', '/Summit_XL_Steel/Velodyne_VLP_16/point_cloud'),
