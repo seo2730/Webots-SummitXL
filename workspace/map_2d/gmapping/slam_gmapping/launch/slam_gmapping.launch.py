@@ -17,7 +17,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         launch_ros.actions.Node(
-            package='slam_gmapping', node_executable='slam_gmapping', output='screen', 
+            package='slam_gmapping', executable='slam_gmapping', output='screen', 
             parameters=[{'use_sim_time':use_sim_time}]
         ),
 

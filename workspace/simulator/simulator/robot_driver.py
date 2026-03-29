@@ -14,7 +14,7 @@ target_speed = {'x': 1.0, 'y': 1.0, 'z': 1.0}
 
 class main:
     def init(self, webots_node, properties):
-
+        print("===== init() called =====", flush=True)  # 추가
         self.__robot = webots_node.robot
         self.__timestep = int(self.__robot.getBasicTimeStep())
 
@@ -31,12 +31,17 @@ class main:
         self.br_motor.setPosition(float('inf'))
         self.br_motor.setVelocity(0)
 
-        rclpy.init(args=None)
+        # 이미 init됐으면 다시 하지 않음
+        if not rclpy.ok():
+            rclpy.init(args=None)
 
         self.__node = rclpy.create_node('robot_driver')
-        self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
+        namespace = properties.get('namespace', '')
+        topic = f'{namespace}/cmd_vel' if namespace else 'cmd_vel'
+        self.__node.create_subscription(Twist, topic, self.__cmd_vel_callback, 1)
 
         self.__target_twist = Twist()  # ✅ 추가
+        print("===== init() done =====", flush=True)
 
     def __cmd_vel_callback(self, twist):
         self.__target_twist = twist
