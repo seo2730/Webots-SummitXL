@@ -130,14 +130,8 @@ void Explore::visualizeFrontiers(
   m.color.b = 255;
   m.color.a = 255;
   // lives forever
-#ifdef ELOQUENT
-  m.lifetime = rclcpp::Duration(0); // deprecated in galactic warning
-#elif DASHING
-  m.lifetime = rclcpp::Duration(0); // deprecated in galactic warning
-#else
-  m.lifetime = rclcpp::Duration::from_seconds(0); // foxy onwards
-#endif
-  // m.lifetime = rclcpp::Duration::from_nanoseconds(0); // suggested in galactic
+  // For Foxy and later, a zero duration means the marker lasts forever.
+  m.lifetime = rclcpp::Duration::from_seconds(0);
   m.frame_locked = true;
 
   // weighted frontiers are always sorted
@@ -230,9 +224,7 @@ void Explore::makePlan()
     prev_distance_ = frontier->min_distance;
   }
   // black list if we've made no progress for a long time
-  if (this->now() - last_progress_ >
-      tf2::durationFromSec(progress_timeout_)) {  // TODO: is progress_timeout_
-                                                  // in seconds?
+  if (this->now() - last_progress_ > rclcpp::Duration::from_seconds(progress_timeout_)) {
     frontier_blacklist_.push_back(target_position);
     RCLCPP_DEBUG(logger_, "Adding current goal to black list");
     makePlan();

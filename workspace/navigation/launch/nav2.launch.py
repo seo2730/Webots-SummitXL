@@ -37,7 +37,7 @@ def generate_launch_description():
 
     lifecycle_nodes = ['controller_server',
                        'planner_server',
-                       'recoveries_server',
+                       'behavior_server',
                        'bt_navigator',
                        'waypoint_follower']
 
@@ -47,8 +47,13 @@ def generate_launch_description():
     # https://github.com/ros/robot_state_publisher/pull/30
     # TODO(orduno) Substitute with `PushNodeRemapping`
     #              https://github.com/ros2/launch_ros/issues/56
-    remappings = [('/tf', 'tf'),
-                  ('/tf_static', 'tf_static')]
+   
+    # nav2.launch.py의 49번 줄 주변
+    # remappings = [('/tf', 'tf'),
+    #               ('/tf_static', 'tf_static')]
+    # map 토픽을 글로벌 /map으로 강제 매핑합니다. (TF 문제가 해결되었다면 tf 리매핑은 비워두어도 됩니다)
+    remappings = []
+
 
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {
@@ -88,7 +93,7 @@ def generate_launch_description():
             'default_bt_xml_filename',
             default_value=os.path.join(
                 get_package_share_directory('nav2_bt_navigator'),
-                'behavior_trees', 'navigate_w_replanning_and_recovery.xml'),
+                'behavior_trees', 'navigate_to_pose_w_replanning_and_recovery.xml'),
             description='Full path to the behavior tree xml file to use'),
 
         DeclareLaunchArgument(
@@ -98,6 +103,7 @@ def generate_launch_description():
         Node(
             package='nav2_controller',
             executable='controller_server',
+            namespace=namespace,
             output='screen',
             parameters=[configured_params],
             remappings=remappings),
@@ -106,14 +112,16 @@ def generate_launch_description():
             package='nav2_planner',
             executable='planner_server',
             name='planner_server',
+            namespace=namespace,
             output='screen',
             parameters=[configured_params],
             remappings=remappings),
 
         Node(
-            package='nav2_recoveries',
-            executable='recoveries_server',
-            name='recoveries_server',
+            package='nav2_behaviors',
+            executable='behavior_server',
+            name='behavior_server',
+            namespace=namespace,
             output='screen',
             parameters=[configured_params],
             remappings=remappings),
@@ -122,6 +130,7 @@ def generate_launch_description():
             package='nav2_bt_navigator',
             executable='bt_navigator',
             name='bt_navigator',
+            namespace=namespace,
             output='screen',
             parameters=[configured_params],
             remappings=remappings),
@@ -130,6 +139,7 @@ def generate_launch_description():
             package='nav2_waypoint_follower',
             executable='waypoint_follower',
             name='waypoint_follower',
+            namespace=namespace,
             output='screen',
             parameters=[configured_params],
             remappings=remappings),
@@ -138,6 +148,7 @@ def generate_launch_description():
             package='nav2_lifecycle_manager',
             executable='lifecycle_manager',
             name='lifecycle_manager_navigation',
+            namespace=namespace,
             output='screen',
             parameters=[{'use_sim_time': use_sim_time},
                         {'autostart': autostart},

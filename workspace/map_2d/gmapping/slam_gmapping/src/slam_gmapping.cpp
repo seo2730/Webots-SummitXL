@@ -98,9 +98,14 @@ void SlamGmapping::init() {
 }
 
 void SlamGmapping::startLiveSlam() {
-    entropy_publisher_ = this->create_publisher<std_msgs::msg::Float64>("entropy", rclcpp::SystemDefaultsQoS());
-    sst_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map", rclcpp::SystemDefaultsQoS());
-    sstm_ = this->create_publisher<nav_msgs::msg::MapMetaData>("map_metadata", rclcpp::SystemDefaultsQoS());
+    // Create a QoS profile for map topics to be compatible with Nav2
+    rclcpp::QoS map_qos(rclcpp::KeepLast(1));
+    map_qos.transient_local();
+    map_qos.reliable();
+
+    entropy_publisher_ = this->create_publisher<std_msgs::msg::Float64>("entropy", 1);
+    sst_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map", map_qos);
+    sstm_ = this->create_publisher<nav_msgs::msg::MapMetaData>("map_metadata", map_qos);
     scan_filter_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::LaserScan>>
             (node_, "scan", rclcpp::SensorDataQoS().get_rmw_qos_profile());
 //    sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
