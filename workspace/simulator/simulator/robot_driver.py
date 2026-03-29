@@ -34,8 +34,11 @@ class main:
         rclpy.init(args=None)
 
         self.__node = rclpy.create_node('robot_driver')
-        self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
+        # properties에서 네임스페이스 받기
+        namespace = properties.get('namespace', '')
+        topic = f'{namespace}/cmd_vel' if namespace else 'cmd_vel'
 
+        self.__node.create_subscription(Twist, topic, self.__cmd_vel_callback, 1)
         self.__target_twist = Twist()  # ✅ 추가
 
     def __cmd_vel_callback(self, twist):
