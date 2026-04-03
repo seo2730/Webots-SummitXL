@@ -8,7 +8,7 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='pointcloud_to_laserscan', executable='pointcloud_to_laserscan_node',
-            remappings=[('cloud_in', '/Summit_XL_Steel/Velodyne_VLP_16/point_cloud'),
+            remappings=[('cloud_in', '/ugv1/Velodyne_VLP_16/point_cloud'),
                         ('scan', '/scan')],
             parameters=[{
                 'target_frame': 'Velodyne_VLP_16',

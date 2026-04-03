@@ -3,7 +3,7 @@ bt_navigator:
     use_sim_time: False
     global_frame: map
     robot_base_frame: base_link
-    odom_topic: /odom
+    odom_topic: odom
     default_bt_xml_filename: "navigate_to_pose_w_replanning_and_recovery.xml"
     plugins:
     - nav2_compute_path_to_pose_action_bt_node
@@ -118,7 +118,7 @@ local_costmap:
         enabled: True
         observation_sources: pointcloud
         pointcloud:
-          topic: /Summit_XL_Steel/Velodyne_VLP_16/point_cloud
+          topic: Velodyne_VLP_16/point_cloud
           max_obstacle_height: 2.0
           clearing: True
           marking: True
@@ -150,7 +150,7 @@ global_costmap:
         enabled: True
         observation_sources: pointcloud
         pointcloud:
-          topic: /Summit_XL_Steel/Velodyne_VLP_16/point_cloud
+          topic: Velodyne_VLP_16/point_cloud
           max_obstacle_height: 2.0
           clearing: True
           marking: True

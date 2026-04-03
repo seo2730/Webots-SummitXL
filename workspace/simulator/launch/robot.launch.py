@@ -23,6 +23,7 @@ from webots_ros2_driver.webots_launcher import WebotsLauncher
 def generate_launch_description():
     package_dir = get_package_share_directory('simulator')
     world = LaunchConfiguration('world')
+    namespace = LaunchConfiguration('namespace')
     robot_description = pathlib.Path(os.path.join(package_dir, 'resource', 'my_robot.urdf')).read_text()
 
     # webots = WebotsLauncher(
@@ -32,6 +33,7 @@ def generate_launch_description():
     webots_ros2_driver = Node(
         package='webots_ros2_driver',
         executable='driver',
+        namespace=namespace,
         output='screen',
         parameters=[
             {'robot_description': robot_description},
@@ -41,6 +43,7 @@ def generate_launch_description():
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
+        namespace=namespace,
         output='screen',
         parameters=[{
             'robot_description': '<robot name=""><link name=""/></robot>'
@@ -50,11 +53,17 @@ def generate_launch_description():
     vlp_publisher = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
+        namespace=namespace,
         output='screen',
         arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'Velodyne_VLP_16'],
     )
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'namespace',
+            default_value='',
+            description='Top-level namespace for the robot'
+        ),
         DeclareLaunchArgument(
             'world',
             default_value='my_world.wbt',
@@ -71,8 +80,9 @@ def generate_launch_description():
         # ),
         Node(
             package='pointcloud_to_laserscan', executable='pointcloud_to_laserscan_node',
-            remappings=[('cloud_in', '/Summit_XL_Steel/Velodyne_VLP_16/point_cloud'),
-                        ('scan', '/scan')],
+            namespace=namespace,
+            remappings=[('cloud_in', '/ugv1/Velodyne_VLP_16/point_cloud'),
+                        ('scan', 'scan')],
             parameters=[{
                 'target_frame': 'Velodyne_VLP_16',
                 'transform_tolerance': 0.01,

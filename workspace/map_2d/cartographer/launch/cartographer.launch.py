@@ -69,7 +69,7 @@ def generate_launch_description():
             arguments=['-configuration_directory', cartographer_config_dir,
                        '-configuration_basename', configuration_basename],
             remappings = [
-            ('points2', '/Summit_XL_Steel/Velodyne_VLP_16/point_cloud')]),
+            ('points2', '/ugv1/Velodyne_VLP_16/point_cloud')]),
 
         DeclareLaunchArgument(
             'resolution',

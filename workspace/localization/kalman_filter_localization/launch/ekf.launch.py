@@ -41,6 +41,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     share_dir = get_package_share_directory('kalman_filter_localization')
+    namespace = launch.substitutions.LaunchConfiguration('namespace')
     ekf_param_dir = launch.substitutions.LaunchConfiguration(
         'ekf_param_dir',
         default=os.path.join(share_dir, 'param', 'ekf.yaml')
@@ -51,15 +52,17 @@ def generate_launch_description():
     ekf = launch_ros.actions.Node(
         package='kalman_filter_localization',
         executable='ekf_localization_node',
+        namespace=namespace,
         parameters=[ekf_param_dir],
-        remappings=[('/ekf_localization/gnss_pose', '/Summit_XL_Steel/gps'),
-                    ('/ekf_localization/imu', '/imu')],
+        remappings=[('ekf_localization/gnss_pose', 'gps'),
+                    ('ekf_localization/imu', 'imu')],
         output='screen'
         )
 
     tf = launch_ros.actions.Node(
         package='tf2_ros',
         executable='static_transform_publisher',
+        namespace=namespace,
         arguments=['0', '0', '0.11', '0', '0', '0', '1', 'base_link', 'Velodyne_VLP_16']
         )
 
@@ -67,10 +70,15 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
+        namespace=namespace,
         arguments=['-d', rviz_config_file],
         output='screen')
 
     return launch.LaunchDescription([
+        launch.actions.DeclareLaunchArgument(
+            'namespace',
+            default_value='',
+            description='Top-level namespace'),
         launch.actions.DeclareLaunchArgument(
             'ekf_param_dir',
             default_value=ekf_param_dir,

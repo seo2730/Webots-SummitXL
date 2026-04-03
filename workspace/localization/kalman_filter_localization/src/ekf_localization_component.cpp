@@ -150,7 +150,7 @@ EkfLocalizationComponent::EkfLocalizationComponent(const rclcpp::NodeOptions & o
   var_odom_ << var_odom_xyz_, var_odom_xyz_, var_odom_xyz_;
 
   // Setup Publisher
-  std::string output_pose_name = "/odom";
+  std::string output_pose_name = "odom";
   current_pose_pub_ = create_publisher<nav_msgs::msg::Odometry>(output_pose_name, 10);
 
   // Setup Subscriber
@@ -257,13 +257,13 @@ EkfLocalizationComponent::EkfLocalizationComponent(const rclcpp::NodeOptions & o
     create_subscription<geometry_msgs::msg::PoseStamped>(initial_pose_topic_, 1,
       initial_pose_callback);
   sub_imu_ =
-    create_subscription<sensor_msgs::msg::Imu>("/imu", 1,
+    create_subscription<sensor_msgs::msg::Imu>("imu", 1,
       imu_callback);
   sub_odom_ =
     create_subscription<nav_msgs::msg::Odometry>(odom_topic_, 1,
       odom_callback);
   sub_gnss_pose_ =
-    create_subscription<geometry_msgs::msg::PointStamped>("/Summit_XL_Steel/robot_gps", 1,
+    create_subscription<geometry_msgs::msg::PointStamped>("robot_gps", 1,
       gnss_pose_callback);
   std::chrono::milliseconds period(pub_period_);
   timer_ = create_wall_timer(

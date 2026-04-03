@@ -43,7 +43,7 @@ def generate_launch_description():
               'pointcloud_min_z': -0.3
     }
     
-    remap = [('cloud_in', '/Summit_XL_Steel/Velodyne_VLP_16/point_cloud')]
+    remap = [('cloud_in', '/ugv1/Velodyne_VLP_16/point_cloud')]
     node = Node(package='octomap_server2',
                  executable='octomap_server',
                  output='screen',

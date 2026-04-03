@@ -21,12 +21,12 @@ public:
     : Node("tf_broadcaster")
     {
         subscription_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
-        "/Summit_XL_Steel/gps", 20, std::bind(&TFbroadcast::topic_callback, this, std::placeholders::_1));
+        "gps", 20, std::bind(&TFbroadcast::topic_callback, this, std::placeholders::_1));
 
         // sub_ekf_ = this->create_subscription<nav_msgs::msg::Odometry>(
         // "/odometry/ekf", 20, std::bind(&TFbroadcast::ekf_callback, this, std::placeholders::_1));
 
-        publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("/gps/odom", 10);
+        publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("gps/odom", 10);
 
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 

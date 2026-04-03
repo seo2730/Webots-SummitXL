@@ -8,6 +8,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
+    namespace = LaunchConfiguration('namespace')
     share_dir = get_package_share_directory('lio_sam')
     parameter_file = LaunchConfiguration('params_file')
     xacro_path = os.path.join(share_dir, 'config', 'robot.urdf.xacro')
@@ -22,10 +23,16 @@ def generate_launch_description():
     print("urdf_file_name : {}".format(xacro_path))
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'namespace',
+            default_value='',
+            description='Top-level namespace'
+        ),
         params_declare,
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
+            namespace=namespace,
             arguments='0.0 0.0 0.0 0.0 0.0 0.0 map odom'.split(' '),
             parameters=[parameter_file],
             output='screen'
@@ -33,6 +40,7 @@ def generate_launch_description():
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
+            namespace=namespace,
             name='robot_state_publisher',
             output='screen',
             parameters=[{
@@ -42,6 +50,7 @@ def generate_launch_description():
         Node(
             package='lio_sam',
             executable='lio_sam_imuPreintegration',
+            namespace=namespace,
             name='lio_sam_imuPreintegration',
             parameters=[parameter_file],
             output='screen'
@@ -49,6 +58,7 @@ def generate_launch_description():
         Node(
             package='lio_sam',
             executable='lio_sam_imageProjection',
+            namespace=namespace,
             name='lio_sam_imageProjection',
             parameters=[parameter_file],
             output='screen'
@@ -56,6 +66,7 @@ def generate_launch_description():
         Node(
             package='lio_sam',
             executable='lio_sam_featureExtraction',
+            namespace=namespace,
             name='lio_sam_featureExtraction',
             parameters=[parameter_file],
             output='screen'
@@ -63,6 +74,7 @@ def generate_launch_description():
         Node(
             package='lio_sam',
             executable='lio_sam_mapOptimization',
+            namespace=namespace,
             name='lio_sam_mapOptimization',
             parameters=[parameter_file],
             output='screen'
@@ -70,6 +82,7 @@ def generate_launch_description():
         Node(
             package='rviz2',
             executable='rviz2',
+            namespace=namespace,
             name='rviz222',
             arguments=['-d', rviz_config_file],
             output='screen'

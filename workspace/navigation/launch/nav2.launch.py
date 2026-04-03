@@ -49,9 +49,7 @@ def generate_launch_description():
     #              https://github.com/ros2/launch_ros/issues/56
    
     # nav2.launch.py의 49번 줄 주변
-    # remappings = [('/tf', 'tf'),
-    #               ('/tf_static', 'tf_static')]
-    # map 토픽을 글로벌 /map으로 강제 매핑합니다. (TF 문제가 해결되었다면 tf 리매핑은 비워두어도 됩니다)
+    # 시뮬레이터와 EKF가 글로벌 /tf에 퍼블리시하므로, Nav2도 글로벌 /tf를 듣도록 리매핑을 제거합니다.
     remappings = []
 
 
