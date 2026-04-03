@@ -50,7 +50,9 @@ def generate_launch_description():
    
     # nav2.launch.py의 49번 줄 주변
     # 시뮬레이터와 EKF가 글로벌 /tf에 퍼블리시하므로, Nav2도 글로벌 /tf를 듣도록 리매핑을 제거합니다.
-    remappings = []
+    remappings = [('cmd_vel', ['/', namespace, '/cmd_vel']),
+        ('/cmd_vel', ['/', namespace, '/cmd_vel'])]
+    # remappings = []
 
 
     # Create our own temporary YAML files that include substitutions
