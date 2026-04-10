@@ -1,6 +1,6 @@
 bt_navigator:
   ros__parameters:
-    use_sim_time: False
+    use_sim_time: True
     global_frame: map
     robot_base_frame: base_link
     odom_topic: odom
@@ -29,15 +29,16 @@ bt_navigator:
 
 bt_navigator_rclcpp_node:
   ros__parameters:
-    use_sim_time: False
+    use_sim_time: True
 
 controller_server:
   ros__parameters:
-    use_sim_time: False
-    controller_frequency: 20.0
+    use_sim_time: True
+    controller_frequency: 10.0      # 🌟 [수정] Webots 부하를 줄이기 위해 10Hz로 감소
     min_x_velocity_threshold: 0.00
     min_y_velocity_threshold: 0.0
     min_theta_velocity_threshold: 0.00
+    transform_tolerance: 1.0        # 🌟 [수정/유지] TF 지연 1초 허용
     controller_plugins: ["FollowPath"]
 
     goal_checker:
@@ -70,7 +71,7 @@ controller_server:
       sim_time: 1.7
       linear_granularity: 0.05
       angular_granularity: 0.025
-      transform_tolerance: 0.2
+      transform_tolerance: 1.0
       trans_stopped_velocity: 0.0
       short_circuit_trajectory_evaluation: True
       stateful: True
@@ -88,7 +89,7 @@ controller_server:
 
 controller_server_rclcpp_node:
   ros__parameters:
-    use_sim_time: False
+    use_sim_time: True
 
 local_costmap:
   local_costmap:
@@ -97,13 +98,14 @@ local_costmap:
       publish_frequency: 3.0
       global_frame: odom
       robot_base_frame: base_link
-      use_sim_time: True                 # [수정] True로 변경
+      transform_tolerance: 1.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      use_sim_time: True
       rolling_window: true
       width: 6
       height: 6
       resolution: 0.01
       robot_radius: 0.8
-      plugins: ["obstacle_layer", "inflation_layer"] # [수정] static_layer 제거!
+      plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
@@ -121,10 +123,10 @@ local_costmap:
       always_send_full_costmap: True
   local_costmap_client:
     ros__parameters:
-      use_sim_time: True                 # [수정] True로 변경
+      use_sim_time: True
   local_costmap_rclcpp_node:
     ros__parameters:
-      use_sim_time: True                 # [수정] True로 변경
+      use_sim_time: True
 
 global_costmap:
   global_costmap:
@@ -133,7 +135,8 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      use_sim_time: True                 # [수정] True로 변경
+      transform_tolerance: 1.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      use_sim_time: True
       robot_radius: 0.8
       lethal_cost_threshold: 60
       resolution: 0.05
@@ -151,7 +154,7 @@ global_costmap:
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
-        map_topic: /ugv1/map             # [핵심 추가] 확실하게 /ugv1/map을 받아오도록 명시
+        map_topic: /ugv1/map
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
@@ -159,27 +162,22 @@ global_costmap:
       always_send_full_costmap: True
   global_costmap_client:
     ros__parameters:
-      use_sim_time: True                 # [수정] True로 변경
+      use_sim_time: True
   global_costmap_rclcpp_node:
     ros__parameters:
-      use_sim_time: True                 # [수정] True로 변경
-
-# map_server:
-#   ros__parameters:
-#     use_sim_time: False
-#     yaml_filename: "turtlebot3_world.yaml"
+      use_sim_time: True
 
 map_saver:
   ros__parameters:
-    use_sim_time: False
+    use_sim_time: True
     save_map_timeout: 5000
     free_thresh_default: 0.25
     occupied_thresh_default: 0.65
 
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 20.0
-    use_sim_time: False
+    expected_planner_frequency: 10.0  # 🌟 [수정] 20.0 -> 10.0 Hz
+    use_sim_time: True
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
@@ -189,11 +187,11 @@ planner_server:
 
 planner_server_rclcpp_node:
   ros__parameters:
-    use_sim_time: False
+    use_sim_time: True
 
 behavior_server:
   ros__parameters:
-    use_sim_time: False
+    use_sim_time: True
     plugins: ["spin", "backup", "wait"]
     spin:
       plugin: "nav2_behaviors/Spin"
@@ -201,13 +199,13 @@ behavior_server:
       max_rotational_vel: 1.0
       min_rotational_vel: 0.4
       rotational_acc_lim: 3.2
-      transform_timeout: 0.1
+      transform_timeout: 1.0          # 🌟 [수정] 회전 시 TF 타임아웃 1초로 연장
     backup:
       plugin: "nav2_behaviors/BackUp"
-      transform_timeout: 0.1
+      transform_timeout: 1.0          # 🌟 [수정] 후진 시 TF 타임아웃 1초로 연장
     wait:
       plugin: "nav2_behaviors/Wait"
 
 robot_state_publisher:
   ros__parameters:
-    use_sim_time: False
+    use_sim_time: True
