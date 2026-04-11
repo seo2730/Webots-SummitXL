@@ -39,7 +39,12 @@ class main:
         if not rclpy.ok():
             rclpy.init(args=None)
 
+        # 🌟 URDF에서 넘겨준 namespace 받기
         self.namespace = properties.get('namespace', '')
+        
+        # 🌟 동적 프레임 이름 생성 (예: 'ugv1/odom', 'ugv1/base_link')
+        self.odom_frame = f"{self.namespace}/odom" if self.namespace else 'odom'
+        self.base_frame = f"{self.namespace}/base_link" if self.namespace else 'base_link'
 
         self.__node = rclpy.create_node(
             'robot_driver',
@@ -51,6 +56,8 @@ class main:
         self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
         self.__target_twist = Twist()
         self.__tf_broadcaster = TransformBroadcaster(self.__node)
+        
+        # clock은 네임스페이스 없이 전역(/clock)으로 퍼블리시
         self.clock_publisher = self.__node.create_publisher(Clock, '/clock', 10)
 
         self.gps = self.__robot.getDevice('gps')
@@ -72,7 +79,7 @@ class main:
         # Webots 시간 먼저 가져오기
         wb_time = self.__robot.getTime()
 
-        # clock publish
+        # clock publish (clock은 frame_id가 필요 없음)
         clock_msg = Clock()
         clock_msg.clock.sec = int(wb_time)
         clock_msg.clock.nanosec = int((wb_time - int(wb_time)) * 1e9)
@@ -97,10 +104,11 @@ class main:
                 curr_time.sec = int(wb_time)
                 curr_time.nanosec = int((wb_time - int(wb_time)) * 1e9)
 
+                # 🌟 TF 브로드캐스트: 동적 프레임 적용
                 t = TransformStamped()
                 t.header.stamp = curr_time
-                t.header.frame_id = 'odom'
-                t.child_frame_id = 'base_link'
+                t.header.frame_id = self.odom_frame       # 수정됨
+                t.child_frame_id = self.base_frame        # 수정됨
 
                 t.transform.translation.x = float(gps_vals[0])
                 t.transform.translation.y = float(gps_vals[1])
@@ -112,10 +120,11 @@ class main:
                     t.transform.rotation.z = math.sin(yaw / 2.0)
                     t.transform.rotation.w = math.cos(yaw / 2.0)
 
+                    # 🌟 Odometry 퍼블리시: 동적 프레임 적용
                     odom_msg = Odometry()
                     odom_msg.header.stamp = curr_time
-                    odom_msg.header.frame_id = 'odom'
-                    odom_msg.child_frame_id = 'base_link'
+                    odom_msg.header.frame_id = self.odom_frame     # 수정됨
+                    odom_msg.child_frame_id = self.base_frame      # 수정됨
 
                     odom_msg.pose.pose.position.x = t.transform.translation.x
                     odom_msg.pose.pose.position.y = t.transform.translation.y
