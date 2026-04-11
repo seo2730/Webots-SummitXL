@@ -51,13 +51,13 @@ controller_server:
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: True
-      min_vel_x: -0.5
-      min_vel_y: -0.1
+      min_vel_x: 0.0
+      min_vel_y: 0.0
       max_vel_x: 0.5
-      max_vel_y: 0.1
+      max_vel_y: 0.0
       max_vel_theta: 0.3
-      min_speed_xy: -0.5
-      max_speed_xy: -0.5
+      min_speed_xy: 0.0
+      max_speed_xy: 0.5
       min_speed_theta: 0.0
       acc_lim_x: 2.5
       acc_lim_y: 0.5
@@ -76,7 +76,7 @@ controller_server:
       short_circuit_trajectory_evaluation: True
       stateful: True
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-      BaseObstacle.scale: 0.02
+      BaseObstacle.scale: 62.0
       PathAlign.scale: 32.0
       PathAlign.forward_point_distance: 0.2
       GoalAlign.scale: 24.0
@@ -104,19 +104,20 @@ local_costmap:
       width: 6
       height: 6
       resolution: 0.01
-      robot_radius: 0.8
+      footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
       plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 5.0
-        inflation_radius: 1.0
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.6
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
         observation_sources: pointcloud
         pointcloud:
           topic: /ugv1/Velodyne_VLP_16/point_cloud
-          max_obstacle_height: 2.0
+          min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
           clearing: True
           marking: True
           data_type: "PointCloud2"
@@ -137,7 +138,7 @@ global_costmap:
       robot_base_frame: base_link
       transform_tolerance: 1.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
       use_sim_time: True
-      robot_radius: 0.8
+      footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
       lethal_cost_threshold: 60
       resolution: 0.05
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -147,7 +148,8 @@ global_costmap:
         observation_sources: pointcloud
         pointcloud:
           topic: /ugv1/Velodyne_VLP_16/point_cloud
-          max_obstacle_height: 2.0
+          min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
           clearing: True
           marking: True
           data_type: "PointCloud2"
@@ -157,7 +159,7 @@ global_costmap:
         map_topic: /ugv1/map
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 5.0
+        cost_scaling_factor: 3.0
         inflation_radius: 0.6
       always_send_full_costmap: True
   global_costmap_client:
