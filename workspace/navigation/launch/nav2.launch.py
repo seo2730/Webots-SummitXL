@@ -50,14 +50,20 @@ def generate_launch_description():
    
     # nav2.launch.py의 49번 줄 주변
     # 시뮬레이터와 EKF가 글로벌 /tf에 퍼블리시하므로, Nav2도 글로벌 /tf를 듣도록 리매핑을 제거합니다.
-    remappings = [('cmd_vel', ['/', namespace, '/cmd_vel']),
-        ('/cmd_vel', ['/', namespace, '/cmd_vel'])]
+    remappings = [
+                    ('/tf', '/tf'),
+                    ('cmd_vel', ['/', namespace, '/cmd_vel']),
+                     ('/odom', ['/', namespace, '/odom']),
+                 ]
     # remappings = []
 
 
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {
         'use_sim_time': use_sim_time,
+        'robot_base_frame': [namespace, '/base_link'], # 🌟 base_link를 ugv1/base_link로 변경
+        'global_frame': [namespace, '/map'],
+        'odom_topic':  [namespace, '/odom'],
         'default_bt_xml_filename': default_bt_xml_filename,
         'autostart': autostart,
         'map_subscribe_transient_local': map_subscribe_transient_local}
