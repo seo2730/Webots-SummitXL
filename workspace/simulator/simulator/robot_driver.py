@@ -14,7 +14,6 @@ HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.123
 LX = 0.2045 
 LY = 0.2225 
-target_speed = {'x': 1.0, 'y': 1.0, 'z': 1.0}
 
 class main:
     def init(self, webots_node, properties):
@@ -39,10 +38,10 @@ class main:
         if not rclpy.ok():
             rclpy.init(args=None)
 
-        # 🌟 URDF에서 넘겨준 namespace 받기
+        # 🌟 URDF에서 넘겨준 namespace 받기 (예: 'ugv1', 'ugv2')
         self.namespace = properties.get('namespace', '')
         
-        # 🌟 동적 프레임 이름 생성 (예: 'ugv1/odom', 'ugv1/base_link')
+        # 🌟 동적 프레임 이름 생성 
         self.odom_frame = f"{self.namespace}/odom" if self.namespace else 'odom'
         self.base_frame = f"{self.namespace}/base_link" if self.namespace else 'base_link'
 
@@ -57,7 +56,7 @@ class main:
         self.__target_twist = Twist()
         self.__tf_broadcaster = TransformBroadcaster(self.__node)
         
-        # clock은 네임스페이스 없이 전역(/clock)으로 퍼블리시
+        # 🌟 도메인이 분리되어 있으므로 각 컨테이너가 전역 /clock을 퍼블리시합니다!
         self.clock_publisher = self.__node.create_publisher(Clock, '/clock', 10)
 
         self.gps = self.__robot.getDevice('gps')
@@ -68,7 +67,7 @@ class main:
         if self.imu:
             self.imu.enable(self.__timestep)
 
-        print("===== init() done =====", flush=True)
+        print(f"===== init() done for [{self.namespace}] =====", flush=True)
 
     def __cmd_vel_callback(self, twist):
         self.__target_twist = twist
@@ -76,10 +75,10 @@ class main:
     def step(self):
         rclpy.spin_once(self.__node, timeout_sec=0)
 
-        # Webots 시간 먼저 가져오기
+        # Webots 시간 가져오기
         wb_time = self.__robot.getTime()
 
-        # clock publish (clock은 frame_id가 필요 없음)
+        # 🌟 clock 퍼블리시 (현재 도메인 내의 모든 노드들이 이 시간을 봅니다)
         clock_msg = Clock()
         clock_msg.clock.sec = int(wb_time)
         clock_msg.clock.nanosec = int((wb_time - int(wb_time)) * 1e9)
@@ -104,11 +103,11 @@ class main:
                 curr_time.sec = int(wb_time)
                 curr_time.nanosec = int((wb_time - int(wb_time)) * 1e9)
 
-                # 🌟 TF 브로드캐스트: 동적 프레임 적용
+                # 🌟 TF 브로드캐스트: 동적 프레임 적용 (odom -> base_link)
                 t = TransformStamped()
                 t.header.stamp = curr_time
-                t.header.frame_id = self.odom_frame       # 수정됨
-                t.child_frame_id = self.base_frame        # 수정됨
+                t.header.frame_id = self.odom_frame       
+                t.child_frame_id = self.base_frame        
 
                 t.transform.translation.x = float(gps_vals[0])
                 t.transform.translation.y = float(gps_vals[1])
@@ -123,8 +122,8 @@ class main:
                     # 🌟 Odometry 퍼블리시: 동적 프레임 적용
                     odom_msg = Odometry()
                     odom_msg.header.stamp = curr_time
-                    odom_msg.header.frame_id = self.odom_frame     # 수정됨
-                    odom_msg.child_frame_id = self.base_frame      # 수정됨
+                    odom_msg.header.frame_id = self.odom_frame     
+                    odom_msg.child_frame_id = self.base_frame      
 
                     odom_msg.pose.pose.position.x = t.transform.translation.x
                     odom_msg.pose.pose.position.y = t.transform.translation.y

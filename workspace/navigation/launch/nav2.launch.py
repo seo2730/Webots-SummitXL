@@ -52,6 +52,7 @@ def generate_launch_description():
     # 시뮬레이터와 EKF가 글로벌 /tf에 퍼블리시하므로, Nav2도 글로벌 /tf를 듣도록 리매핑을 제거합니다.
     remappings = [
                     ('/tf', '/tf'),
+                    ('/tf_static', '/tf_static'),
                     ('cmd_vel', ['/', namespace, '/cmd_vel']),
                      ('/odom', ['/', namespace, '/odom']),
                  ]
@@ -64,9 +65,11 @@ def generate_launch_description():
         'robot_base_frame': [namespace, '/base_link'], # 🌟 base_link를 ugv1/base_link로 변경
         'global_frame': [namespace, '/map'],
         'odom_topic':  [namespace, '/odom'],
+        'map_topic': ['/', namespace, '/map'],
         'default_bt_xml_filename': default_bt_xml_filename,
         'autostart': autostart,
-        'map_subscribe_transient_local': map_subscribe_transient_local}
+        'map_subscribe_transient_local': map_subscribe_transient_local
+    }
 
     configured_params = RewrittenYaml(
             source_file=params_file,
@@ -111,7 +114,9 @@ def generate_launch_description():
             executable='controller_server',
             namespace=namespace,
             output='screen',
-            parameters=[configured_params],
+            parameters=[configured_params,
+                        {'local_costmap.local_costmap.ros__parameters.global_frame': [namespace, '/odom']}
+                        ],
             remappings=remappings),
 
         Node(
