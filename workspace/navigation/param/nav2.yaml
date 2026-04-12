@@ -4,6 +4,9 @@ bt_navigator:
     global_frame: map
     robot_base_frame: base_link
     odom_topic: odom
+    bt_loop_duration: 500
+    transform_tolerance: 10.0
+    # default_bt_xml_filename: "navigate_to_pose.xml"
     default_bt_xml_filename: "navigate_to_pose_w_replanning_and_recovery.xml"
     plugins:
     - nav2_compute_path_to_pose_action_bt_node
@@ -38,7 +41,7 @@ controller_server:
     min_x_velocity_threshold: 0.00
     min_y_velocity_threshold: 0.0
     min_theta_velocity_threshold: 0.00
-    transform_tolerance: 1.0        # 🌟 [수정/유지] TF 지연 1초 허용
+    transform_tolerance: 10.0        # 🌟 [수정/유지] TF 지연 1초 허용
     controller_plugins: ["FollowPath"]
 
     goal_checker:
@@ -71,7 +74,7 @@ controller_server:
       sim_time: 1.7
       linear_granularity: 0.05
       angular_granularity: 0.025
-      transform_tolerance: 1.0
+      transform_tolerance: 10.0
       trans_stopped_velocity: 0.0
       short_circuit_trajectory_evaluation: True
       stateful: True
@@ -94,16 +97,16 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 6.0
-      publish_frequency: 3.0
+      update_frequency: 5.0
+      publish_frequency: 2.5
       global_frame: odom
       robot_base_frame: base_link
-      transform_tolerance: 1.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
       use_sim_time: True
       rolling_window: true
       width: 6
       height: 6
-      resolution: 0.01
+      resolution: 0.1
       footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
       plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
@@ -113,14 +116,14 @@ local_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: pointcloud
+        observation_sources: scan
         pointcloud:
-          topic: Velodyne_VLP_16/point_cloud
-          min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
-          max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
+          topic: scan
+          #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          #max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
           clearing: True
           marking: True
-          data_type: "PointCloud2"
+          data_type: "LaserScan"
       always_send_full_costmap: True
   local_costmap_client:
     ros__parameters:
@@ -136,23 +139,23 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      transform_tolerance: 1.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
       use_sim_time: True
       footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
       lethal_cost_threshold: 60
-      resolution: 0.05
+      resolution: 0.1
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: pointcloud
+        observation_sources: scan
         pointcloud:
-          topic: Velodyne_VLP_16/point_cloud
-          min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
-          max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
+          topic: scan
+          #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          #max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
           clearing: True
           marking: True
-          data_type: "PointCloud2"
+          data_type: "LaserScan"
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
@@ -178,7 +181,7 @@ map_saver:
 
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 10.0  # 🌟 [수정] 20.0 -> 10.0 Hz
+    expected_planner_frequency: 2.0  # 🌟 [수정] 20.0 -> 10.0 Hz
     use_sim_time: True
     planner_plugins: ["GridBased"]
     GridBased:

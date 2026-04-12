@@ -56,8 +56,12 @@ class main:
         self.__target_twist = Twist()
         self.__tf_broadcaster = TransformBroadcaster(self.__node)
         
-        # 🌟 도메인이 분리되어 있으므로 각 컨테이너가 전역 /clock을 퍼블리시합니다!
-        self.clock_publisher = self.__node.create_publisher(Clock, '/clock', 10)
+        # 🌟 [여기 추가!] ugv1만 마스터 시계로 임명합니다.
+        if self.namespace == 'ugv2' or self.namespace == '':
+            self.clock_publisher = self.__node.create_publisher(Clock, '/clock', 10)
+            self.is_clock_master = True
+        else:
+            self.is_clock_master = False
 
         self.gps = self.__robot.getDevice('gps')
         if self.gps:
@@ -78,11 +82,12 @@ class main:
         # Webots 시간 가져오기
         wb_time = self.__robot.getTime()
 
-        # 🌟 clock 퍼블리시 (현재 도메인 내의 모든 노드들이 이 시간을 봅니다)
-        clock_msg = Clock()
-        clock_msg.clock.sec = int(wb_time)
-        clock_msg.clock.nanosec = int((wb_time - int(wb_time)) * 1e9)
-        self.clock_publisher.publish(clock_msg)
+        # 🌟 [여기 추가!] 마스터(ugv1)일 때만 전역 시계를 퍼블리시합니다.
+        if self.is_clock_master:
+            clock_msg = Clock()
+            clock_msg.clock.sec = int(wb_time)
+            clock_msg.clock.nanosec = int((wb_time - int(wb_time)) * 1e9)
+            self.clock_publisher.publish(clock_msg)
 
         vx = self.__target_twist.linear.x
         vy = self.__target_twist.linear.y
