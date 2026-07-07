@@ -57,7 +57,7 @@ class main:
         self.__tf_broadcaster = TransformBroadcaster(self.__node)
         
         # 🌟 [여기 추가!] ugv1만 마스터 시계로 임명합니다.
-        if self.namespace == 'ugv2' or self.namespace == '':
+        if self.namespace == 'ugv1' or self.namespace == '':
             self.clock_publisher = self.__node.create_publisher(Clock, '/clock', 10)
             self.is_clock_master = True
         else:
