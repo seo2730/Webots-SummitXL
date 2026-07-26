@@ -8,6 +8,8 @@ orthographicViewHeight: 1
 textFiles: -1
 globalOptionalRendering: LidarPointClouds
 consoles: Console:All:All
+renderingDevicePerspectives: Mavic 2 PRO:camera;1;1;0;0
+renderingDevicePerspectives: drone1:camera;1;1;0;0
 renderingDevicePerspectives: spot1:left flank camera;0;0.597222;0;0
 renderingDevicePerspectives: spot1:left flank depth;1;1;0;0
 renderingDevicePerspectives: spot1:left head camera;0;0.597222;0;0

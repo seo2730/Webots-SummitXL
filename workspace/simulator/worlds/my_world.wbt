@@ -23,6 +23,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "../protos/VelodyneVLP-16.proto"
+EXTERNPROTO "../protos/Mavic2ProMedium.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/apartment_structure/protos/Wall.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
 EXTERNPROTO "../../../../webots_ros2_spot/protos/Spot.proto"
@@ -712,4 +713,9 @@ PottedTree {
 PottedTree {
   translation 9.46 1.04 0
   name "potted tree(1)"
+}
+DEF DRONE1 Mavic2ProMedium {
+  translation -6.5 5.5 0.13
+  rotation 0 0 1 0
+  name "drone1"
 }
