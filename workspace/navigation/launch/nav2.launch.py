@@ -64,6 +64,7 @@ def generate_launch_description():
         'use_sim_time': use_sim_time,
         'robot_base_frame': [namespace, '/base_link'], # 🌟 base_link를 ugv1/base_link로 변경
         'global_frame': [namespace, '/map'],
+        'local_frame': [namespace, '/odom'], # 🌟 behavior_server(리커버리)용 odom 프레임
         'odom_topic':  [namespace, '/odom'],
         'map_topic': ['/', namespace, '/map'],
         'default_bt_xml_filename': default_bt_xml_filename,
