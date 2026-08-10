@@ -700,5 +700,5 @@ PottedTree {
 DEF DRONE1 Mavic2ProMedium {
   translation -6.5 5.5 0.13
   name "drone1"
-  controller "mavic2pro_medium"
+  controller "<extern>"
 }

@@ -25,7 +25,8 @@ setup(
     entry_points={
         'console_scripts': [
             'robot_driver = simulator.robot_driver:main',
-            'keyboard = simulator.keyboard:main'
+            'keyboard = simulator.keyboard:main',
+            'drone_teleop = simulator.drone_teleop:main'
         ],
     },
 )
