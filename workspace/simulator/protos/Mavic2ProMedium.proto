@@ -978,6 +978,16 @@ Robot {
     centerOfMass [
       -0.176 0 -0.08
     ]
+    # 공기 저항 모델. 순정 Mavic 월드는 이걸 WorldInfo.defaultDamping(0.5/0.5)으로
+    # 전역 설정하지만, my_world.wbt에는 없고 전역으로 켜면 UGV/Spot 물리까지
+    # 바뀌므로 드론 본체에만 동일한 값을 건다.
+    # 수평 제어 루프가 없는 상태라 이게 빠지면 진공에서 나는 셈이 되어,
+    # 미세한 기울기에도 무한히 가속한다(20초에 7.5m, 계속 증가).
+    # 고도 진동은 이것과 별개이며 컨트롤러의 k_vertical_d가 담당한다.
+    damping Damping {
+      linear 0.5
+      angular 0.5
+    }
   }
   controller IS controller
   controllerArgs IS controllerArgs
