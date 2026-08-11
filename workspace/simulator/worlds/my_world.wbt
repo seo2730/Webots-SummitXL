@@ -23,7 +23,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "../protos/VelodyneVLP-16.proto"
-EXTERNPROTO "../protos/Mavic2ProMedium.proto"
+IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMedium.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/apartment_structure/protos/Wall.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
 EXTERNPROTO "../../../../webots_ros2_spot/protos/Spot.proto"
@@ -701,4 +701,16 @@ DEF DRONE1 Mavic2ProMedium {
   translation -6.5 5.5 0.13
   name "drone1"
   controller "<extern>"
+}
+# 로봇 소환 전담 노드 (webots_robot_spawner).
+# 몸도 센서도 없이 씬 트리를 조작할 권한만 갖는 유령 로봇이다. 실행 중에 로봇을
+# 추가하는 방법이 Supervisor API뿐이라 이런 노드가 하나 필요하다.
+#
+# synchronization FALSE 가 중요하다. TRUE면 Webots가 매 스텝 이 컨트롤러의 응답을
+# 기다리므로, fleet 컨테이너가 안 떠 있으면 시뮬레이션 전체가 멈춘다.
+DEF SPAWN_SUPERVISOR Robot {
+  name "spawn_supervisor"
+  controller "<extern>"
+  supervisor TRUE
+  synchronization FALSE
 }
