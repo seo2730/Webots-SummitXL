@@ -1,0 +1,142 @@
+#VRML_SIM R2025a utf8
+# license: Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+# license url: https://cyberbotics.com/webots_assets_license
+# keywords: robot/wheeled
+# 이 프로젝트의 UGV 구성을 그대로 담은 SummitXlSteel 래퍼.
+#
+# 왜 필요한가:
+#   my_world.wbt 의 ugv1/ugv2 는 GPS·Compass·Accelerometer·Gyro·InertialUnit·Velodyne
+#   여섯 개를 bodySlot 에 **인라인 85줄**로 박아 두고 있었다. 로봇을 런타임에 소환하려면
+#   그 전체를 문자열로 만들어 씬 트리에 꽂아야 하는데, 그러면 소환 코드가 월드 파일의
+#   센서 배치를 복제하게 된다. 둘 중 하나만 고치면 조용히 어긋난다.
+#
+#   센서를 PROTO 안으로 옮기면 소환 문자열이 6줄로 줄고, 센서 구성이 한 곳에만 남는다.
+#   정적으로 놓는 로봇도 이 PROTO 를 쓰면 ugv1/ugv2/소환된 ugv3 이 100% 같은 몸이 된다.
+#
+# 소환 방법 (webots_robot_spawner):
+#   월드에 `IMPORTABLE EXTERNPROTO "../protos/SummitXlSteelSensorized.proto"` 선언 필요.
+#   일반 EXTERNPROTO 로는 런타임 주입이 실패한다.
+#
+# 디바이스 이름은 robot_driver.py / SummitXlSteel.urdf.xacro 가 참조하므로
+# **절대 바꾸면 안 된다**: robot_gps, com, acc, gyr, imu, Velodyne_VLP_16
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/robotnik/summit_xl_steel/protos/SummitXlSteel.proto"
+EXTERNPROTO "VelodyneVLP-16.proto"
+
+PROTO SummitXlSteelSensorized [
+  field SFVec3f     translation     0 0 0.12            # Is `Pose.translation`.
+  field SFRotation  rotation        0 0 1 0             # Is `Pose.rotation`.
+  field SFString    name            "ugv"               # Is `Robot.name`. ROS 2 네임스페이스로도 쓰인다.
+  field SFString    controller      "<extern>"          # Is `Robot.controller`.
+  field MFString    controllerArgs  []                  # Is `Robot.controllerArgs`.
+  field SFString    window          "<generic>"         # Is `Robot.window`.
+  field SFString    customData      ""                  # Is `Robot.customData`.
+  field SFBool      supervisor      TRUE                # Is `Robot.supervisor`.
+  field SFBool      synchronization TRUE                # Is `Robot.synchronization`. 소환 시에는 FALSE 로 넣는다.
+  field MFNode      frontLidarSlot  []                  # Is `SummitXlSteel.frontLidarSlot`.
+  field MFNode      backLidarSlot   []                  # Is `SummitXlSteel.backLidarSlot`.
+  field MFNode      extraBodySlot   []                  # bodySlot 에 **추가로** 얹을 노드. 기본 센서 6개는 그대로 유지된다.
+]
+{
+  SummitXlSteel {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    window IS window
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    frontLidarSlot IS frontLidarSlot
+    backLidarSlot IS backLidarSlot
+    bodySlot [
+      GPS {
+        translation 0 0 -0.02
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.333333 1 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.02
+              radius 0.02
+            }
+          }
+        ]
+        name "robot_gps"
+      }
+      Compass {
+        translation 0 0 -0.01
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.666667 1 0
+              roughness 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.01
+              radius 0.02
+            }
+          }
+        ]
+        name "com"
+      }
+      Accelerometer {
+        translation 0 0 -0.03
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 1 0.666667 1
+              roughness 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.01
+              radius 0.02
+            }
+          }
+        ]
+        name "acc"
+      }
+      Gyro {
+        translation 0 0 -0.03
+        children [
+          Shape {
+            appearance PBRAppearance {
+            }
+            geometry Cylinder {
+              height 0.01
+              radius 0.02
+            }
+          }
+        ]
+        name "gyr"
+      }
+      InertialUnit {
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.666667 0 0
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.02
+              radius 0.02
+            }
+          }
+        ]
+        name "imu"
+      }
+      VelodyneVLP-16 {
+        translation 0 0 0.05
+        name "Velodyne_VLP_16"
+      }
+      Group {
+        children IS extraBodySlot
+      }
+    ]
+  }
+}

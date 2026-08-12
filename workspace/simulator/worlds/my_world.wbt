@@ -24,6 +24,10 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "../protos/VelodyneVLP-16.proto"
 IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMedium.proto"
+# 런타임 소환용 래퍼 PROTO. IMPORTABLE 이어야 supervisor 가 주입할 수 있다.
+# 센서가 PROTO 안에 들어 있어 소환 문자열이 6줄로 끝난다 (각 .proto 주석 참고).
+IMPORTABLE EXTERNPROTO "../protos/SummitXlSteelSensorized.proto"
+IMPORTABLE EXTERNPROTO "../protos/SpotSensorized.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/apartment_structure/protos/Wall.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/WoodenBox.proto"
 EXTERNPROTO "../../../../webots_ros2_spot/protos/Spot.proto"

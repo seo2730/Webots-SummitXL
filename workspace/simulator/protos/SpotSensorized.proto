@@ -1,0 +1,94 @@
+#VRML_SIM R2025a utf8
+# keywords: robot/legged
+# 이 프로젝트의 Spot 구성을 그대로 담은 Spot 래퍼.
+#
+# 왜 필요한가:
+#   my_world.wbt 의 spot1 은 거리센서 4개를 middleExtension 에 **인라인 40줄**로 박아
+#   두고 있었다. SummitXlSteelSensorized.proto 와 같은 이유로 PROTO 안으로 옮긴다.
+#   (자세한 근거는 그 파일 주석 참고)
+#
+# 소환 방법 (webots_robot_spawner):
+#   월드에 `IMPORTABLE EXTERNPROTO "../protos/SpotSensorized.proto"` 선언 필요.
+#
+# 디바이스 이름은 spot_driver.py 가 참조하므로 **절대 바꾸면 안 된다**:
+#   front_left_dist, front_right_dist, rear_left_dist, rear_right_dist
+#
+# ⚠️ supervisor 기본값이 TRUE 다. spot_driver.py 가 Supervisor 전용 API 로 자기 몸의
+#    정답 위치를 읽기 때문에 FALSE 면 init() 이 조용히 실패한다 (Readme 10장 참고).
+
+EXTERNPROTO "../../../../webots_ros2_spot/protos/Spot.proto"
+
+PROTO SpotSensorized [
+  field SFVec3f     translation       0 0 0.624                 # Is `Pose.translation`.
+  field SFRotation  rotation          0 0 1 0                   # Is `Pose.rotation`.
+  field SFString    name              "spot"                    # Is `Solid.name`. ROS 2 네임스페이스로도 쓰인다.
+  field SFString    model             "Boston Dynamics - Spot"  # Is `Robot.model`.
+  field SFString    controller        "<extern>"                # Is `Robot.controller`.
+  field MFString    controllerArgs    []                        # Is `Robot.controllerArgs`.
+  field SFString    window            "<generic>"               # Is `Robot.window`.
+  field SFString    customData        ""                        # Is `Robot.customData`.
+  field SFBool      supervisor        TRUE                      # Is `Robot.supervisor`. spot_driver 가 요구한다.
+  field SFBool      synchronization   TRUE                      # Is `Robot.synchronization`. 소환 시에는 FALSE 로 넣는다.
+  field SFBool      selfCollision     FALSE                     # Is `Robot.selfCollision`.
+  field MFNode      frontExtension    []                        # Is `Spot.frontExtension`.
+  field MFNode      rearExtension     []                        # Is `Spot.rearExtension`.
+  field MFNode      extraMiddleSlot   []                        # middleExtension 에 **추가로** 얹을 노드. 거리센서 4개는 그대로 유지된다.
+]
+{
+  Spot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    model IS model
+    controller IS controller
+    controllerArgs IS controllerArgs
+    window IS window
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    frontExtension IS frontExtension
+    rearExtension IS rearExtension
+    middleExtension [
+      DistanceSensor {
+        translation -0.05 -0.21 -0.3
+        rotation -0.7071067811865476 0.7071067811865476 0 3.14159
+        name "front_left_dist"
+        lookupTable [
+          0 0 0
+          1000 1000 0
+        ]
+      }
+      DistanceSensor {
+        translation 0.05 -0.21 -0.3
+        rotation -0.7071067811865476 0.7071067811865476 0 3.14159
+        name "front_right_dist"
+        lookupTable [
+          0 0 0
+          1000 1000 0
+        ]
+      }
+      DistanceSensor {
+        translation -0.05 -0.21 0.3
+        rotation 0 0 1 -1.57079
+        name "rear_left_dist"
+        lookupTable [
+          0 0 0
+          1000 1000 0
+        ]
+      }
+      DistanceSensor {
+        translation 0.05 -0.21 0.3
+        rotation 0 0 1 -1.57079
+        name "rear_right_dist"
+        lookupTable [
+          0 0 0
+          1000 1000 0
+        ]
+      }
+      Group {
+        children IS extraMiddleSlot
+      }
+    ]
+  }
+}
