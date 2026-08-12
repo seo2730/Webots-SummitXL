@@ -2,6 +2,7 @@ import rclpy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from rosgraph_msgs.msg import Clock
+from sensor_msgs.msg import JointState
 import math
 
 from tf2_ros import TransformBroadcaster
@@ -35,6 +36,25 @@ class main:
         self.br_motor.setPosition(float('inf'))
         self.br_motor.setVelocity(0.0)
 
+        # 🌟 바퀴 관절 상태(joint_states) 발행 준비.
+        # 이게 없으면 robot_state_publisher 가 바퀴 링크의 TF 를 못 만들고,
+        # RViz 의 RobotModel 이 링크 TF 부재로 통째로 빨간 에러가 된다.
+        # URDF 의 관절 이름과 Webots 디바이스 이름이 같아서 그대로 쓴다.
+        #
+        # 센서 이름을 추측하지 않고 모터에서 직접 얻는다. PositionSensor 가 없는
+        # 모델이면 None 이 돌아오므로 그 바퀴만 조용히 빠진다.
+        self.wheel_sensors = {}
+        for joint_name, motor in (
+            ('front_left_wheel_joint', self.fl_motor),
+            ('front_right_wheel_joint', self.fr_motor),
+            ('back_left_wheel_joint', self.bl_motor),
+            ('back_right_wheel_joint', self.br_motor),
+        ):
+            sensor = motor.getPositionSensor()
+            if sensor is not None:
+                sensor.enable(self.__timestep)
+                self.wheel_sensors[joint_name] = sensor
+
         if not rclpy.ok():
             rclpy.init(args=None)
 
@@ -52,6 +72,7 @@ class main:
         )
 
         self.odom_publisher = self.__node.create_publisher(Odometry, 'odom', 10)
+        self.joint_state_publisher = self.__node.create_publisher(JointState, 'joint_states', 10)
         self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
         self.__target_twist = Twist()
         self.__tf_broadcaster = TransformBroadcaster(self.__node)
@@ -71,16 +92,43 @@ class main:
         if self.imu:
             self.imu.enable(self.__timestep)
 
-        print(f"===== init() done for [{self.namespace}] =====", flush=True)
+        print(f"===== init() done for [{self.namespace}] "
+              f"(바퀴 위치센서 {len(self.wheel_sensors)}/4) =====", flush=True)
 
     def __cmd_vel_callback(self, twist):
         self.__target_twist = twist
+
+    def __publish_joint_states(self, stamp):
+        """바퀴 관절의 현재 각도를 발행한다.
+
+        robot_state_publisher 가 이걸 받아야 바퀴 링크의 TF 를 만든다.
+        연속 회전 관절이라 값이 계속 커지는데, TF 계산은 각도를 그대로 쓰므로 문제없다.
+        """
+        if not self.wheel_sensors:
+            return
+
+        msg = JointState()
+        msg.header.stamp = stamp
+        for joint_name, sensor in self.wheel_sensors.items():
+            value = sensor.getValue()
+            if math.isnan(value):
+                continue
+            msg.name.append(joint_name)
+            msg.position.append(float(value))
+
+        if msg.name:
+            self.joint_state_publisher.publish(msg)
 
     def step(self):
         rclpy.spin_once(self.__node, timeout_sec=0)
 
         # Webots 시간 가져오기
         wb_time = self.__robot.getTime()
+
+        # 시뮬 시각. odom/TF/joint_states 가 모두 같은 시각을 써야 한다.
+        curr_time = Time()
+        curr_time.sec = int(wb_time)
+        curr_time.nanosec = int((wb_time - int(wb_time)) * 1e9)
 
         # 🌟 [여기 추가!] 마스터(ugv1)일 때만 전역 시계를 퍼블리시합니다.
         if self.is_clock_master:
@@ -100,14 +148,12 @@ class main:
         self.br_motor.setVelocity(bl)
         self.fr_motor.setVelocity(br)
 
+        self.__publish_joint_states(curr_time)
+
         if self.gps and self.imu:
             gps_vals = self.gps.getValues()
-            
-            if gps_vals and not math.isnan(gps_vals[0]):
-                curr_time = Time()
-                curr_time.sec = int(wb_time)
-                curr_time.nanosec = int((wb_time - int(wb_time)) * 1e9)
 
+            if gps_vals and not math.isnan(gps_vals[0]):
                 # 🌟 TF 브로드캐스트: 동적 프레임 적용 (odom -> base_link)
                 t = TransformStamped()
                 t.header.stamp = curr_time
