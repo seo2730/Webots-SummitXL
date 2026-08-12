@@ -1,0 +1,2039 @@
+#VRML_SIM R2025a utf8
+IMPORTABLE EXTERNPROTO "../protos/SpotSensorized.proto"
+IMPORTABLE EXTERNPROTO "../protos/SummitXlSteelSensorized.proto"
+IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMedium.proto"
+# gen_world.py 가 생성한 월드 — 직접 고치지 말고 스크립트를 고쳐 다시 생성할 것.
+#
+# 외부 PROTO 의존이 없다. 바닥·벽·선반·기둥이 전부 plain Solid + Box 라서
+# 컨트롤러도, 다운로드도, 월드 옆 캐시 디렉터리도 필요 없다.
+# (Webots 샘플 월드들이 그 셋 때문에 계속 걸렸다 — gen_world.py 주석 참고)
+
+WorldInfo {
+  info [ "100x100 m 창고형 작전 지역 (gen_world.py 생성)" ]
+  title "warehouse100"
+  basicTimeStep 32
+}
+Viewpoint {
+  orientation -0.35 0.35 0.87 1.7
+  position -35.0 -35.0 45.0
+}
+DirectionalLight {
+  direction 0.3 -0.4 -1
+  intensity 3
+  castShadows FALSE
+}
+DirectionalLight {
+  direction -0.5 0.3 -0.6
+  intensity 1.5
+}
+Background {
+  skyColor [ 0.62 0.68 0.74 ]
+}
+Solid {
+  translation 0.000 0.000 -0.050
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.45 0.45 0.48
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 100.000 100.000 0.100
+      }
+    }
+  ]
+  name "floor"
+  boundingObject Box {
+    size 100.000 100.000 0.100
+  }
+}
+Solid {
+  translation 0.000 50.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.72 0.72 0.7
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 100.000 0.300 4.000
+      }
+    }
+  ]
+  name "wall_n"
+  boundingObject Box {
+    size 100.000 0.300 4.000
+  }
+}
+Solid {
+  translation 0.000 -50.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.72 0.72 0.7
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 100.000 0.300 4.000
+      }
+    }
+  ]
+  name "wall_s"
+  boundingObject Box {
+    size 100.000 0.300 4.000
+  }
+}
+Solid {
+  translation 50.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.72 0.72 0.7
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.300 100.000 4.000
+      }
+    }
+  ]
+  name "wall_e"
+  boundingObject Box {
+    size 0.300 100.000 4.000
+  }
+}
+Solid {
+  translation -50.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.72 0.72 0.7
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.300 100.000 4.000
+      }
+    }
+  ]
+  name "wall_w"
+  boundingObject Box {
+    size 0.300 100.000 4.000
+  }
+}
+Solid {
+  translation -36.000 -41.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_0_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 -41.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_0_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 -41.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_0_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 -41.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_0_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 -35.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_1_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 -35.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_1_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 -35.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_1_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 -35.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_1_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 -29.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_2_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 -29.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_2_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 -29.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_2_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 -29.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_2_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 -23.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_3_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 -23.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_3_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 -23.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_3_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 -23.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_3_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 -17.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_4_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 -17.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_4_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 -17.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_4_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 -17.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_4_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 -11.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_5_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 -11.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_5_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 -11.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_5_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 -11.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_5_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 -5.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_6_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 -5.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_6_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 -5.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_6_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 -5.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_6_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 7.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_8_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 7.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_8_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 7.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_8_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 7.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_8_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 13.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_9_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 13.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_9_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 13.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_9_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 13.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_9_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 19.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_10_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 19.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_10_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 19.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_10_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 19.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_10_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 25.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_11_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 25.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_11_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 25.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_11_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 25.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_11_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 31.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_12_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 31.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_12_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 31.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_12_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 31.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_12_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 37.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_13_0"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -16.000 37.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_13_1"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 4.000 37.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_13_2"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation 24.000 37.000 1.500
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.55 0.42 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 16.000 2.000 3.000
+      }
+    }
+  ]
+  name "shelf_13_3"
+  boundingObject Box {
+    size 16.000 2.000 3.000
+  }
+}
+Solid {
+  translation -36.000 -36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-3_-3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -36.000 -24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-3_-2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -36.000 -12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-3_-1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -36.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-3_0"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -36.000 12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-3_1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -36.000 24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-3_2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -36.000 36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-3_3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -24.000 -36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-2_-3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -24.000 -24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-2_-2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -24.000 -12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-2_-1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -24.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-2_0"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -24.000 12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-2_1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -24.000 24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-2_2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -24.000 36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-2_3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -12.000 -36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-1_-3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -12.000 -24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-1_-2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -12.000 -12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-1_-1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -12.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-1_0"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -12.000 12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-1_1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -12.000 24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-1_2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation -12.000 36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_-1_3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 0.000 -36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_0_-3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 0.000 -24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_0_-2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 0.000 -12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_0_-1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 0.000 12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_0_1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 0.000 24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_0_2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 0.000 36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_0_3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 12.000 -36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_1_-3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 12.000 -24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_1_-2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 12.000 -12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_1_-1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 12.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_1_0"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 12.000 12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_1_1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 12.000 24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_1_2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 12.000 36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_1_3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 24.000 -36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_2_-3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 24.000 -24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_2_-2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 24.000 -12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_2_-1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 24.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_2_0"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 24.000 12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_2_1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 24.000 24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_2_2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 24.000 36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_2_3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 36.000 -36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_3_-3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 36.000 -24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_3_-2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 36.000 -12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_3_-1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 36.000 0.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_3_0"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 36.000 12.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_3_1"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 36.000 24.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_3_2"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+Solid {
+  translation 36.000 36.000 2.000
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.35 0.35 0.38
+        roughness 0.9
+        metalness 0
+      }
+      geometry Box {
+        size 0.500 0.500 4.000
+      }
+    }
+  ]
+  name "pillar_3_3"
+  boundingObject Box {
+    size 0.500 0.500 4.000
+  }
+}
+# >>> SPAWNER READY — prepare_world.py 가 넣은 것
+# 로봇 소환 전담 노드. 몸도 센서도 없이 씬 트리를 조작할 권한만 갖는다.
+# 실행 중에 로봇을 추가하는 방법이 Supervisor API 뿐이라 이런 노드가 하나 필요하다.
+#
+# synchronization FALSE 가 중요하다. TRUE 면 Webots 가 매 스텝 이 컨트롤러의 응답을
+# 기다리므로, fleet 컨테이너가 안 떠 있으면 시뮬레이션 전체가 멈춘다.
+DEF SPAWN_SUPERVISOR Robot {
+  name "spawn_supervisor"
+  controller "<extern>"
+  supervisor TRUE
+  synchronization FALSE
+}
+# <<< SPAWNER READY
