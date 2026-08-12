@@ -79,6 +79,25 @@ def euler_to_quaternion(roll, pitch, yaw):
 
 
 class main:
+
+    @staticmethod
+    def __motor_range(motor):
+        """모터의 가동 범위를 (min, max)로 돌려준다. 무제한이면 None.
+
+        Webots 규약: minPosition == maxPosition == 0 이면 제한 없음.
+        """
+        lo, hi = motor.getMinPosition(), motor.getMaxPosition()
+        if lo == 0.0 and hi == 0.0:
+            return None
+        return lo, hi
+
+    @staticmethod
+    def __clamp(value, limits):
+        if limits is None:
+            return value
+        lo, hi = limits
+        return min(max(value, lo), hi)
+
     def init(self, webots_node, properties):
         self.__robot = webots_node.robot
         self.__timestep = int(self.__robot.getBasicTimeStep())
@@ -108,6 +127,16 @@ class main:
         # --- 짐벌 (각속도 댐핑, 순정과 동일) ---
         self.__camera_roll = self.__robot.getDevice('camera roll')
         self.__camera_pitch = self.__robot.getDevice('camera pitch')
+
+        # 모터의 실제 가동 범위를 읽어 둔다. 짐벌 명령을 이 범위로 잘라 보내지 않으면
+        # 기체가 크게 흔들릴 때 Webots 가 매 스텝 경고를 뱉는다:
+        #   RotationalMotor "camera roll": too low requested position: -1.62 < -0.5
+        # Webots 는 어차피 내부에서 자르므로 동작은 같지만, 콘솔이 경고로 도배되어
+        # 진짜 경고를 못 보게 된다. PROTO 기준 roll [-0.5, 0.5], pitch [-0.5, 1.7].
+        self.__gimbal_limits = {
+            'roll': self.__motor_range(self.__camera_roll),
+            'pitch': self.__motor_range(self.__camera_pitch),
+        }
 
         if not rclpy.ok():
             rclpy.init(args=None)
@@ -159,9 +188,17 @@ class main:
 
         # ------------------------------------------------------------------
         # 짐벌 안정화 (각속도 댐핑)
+        #
+        # 명령을 모터 가동 범위로 자른다. 이 값은 각도가 아니라 **각속도에 비례**하는
+        # 양이라, 기체가 급하게 흔들리면 쉽게 범위를 넘는다. 예를 들어 roll 계수가
+        # 0.115 이므로 roll_velocity 가 4.3 rad/s 만 넘어도 한계(-0.5)를 벗어난다.
+        # 소환 직후 낙하나 급기동에서 실제로 -1.62 까지 나왔다.
+        # 자르지 않으면 Webots 가 매 스텝 "too low requested position" 경고를 뱉는다.
         # ------------------------------------------------------------------
-        self.__camera_roll.setPosition(-0.115 * roll_velocity)
-        self.__camera_pitch.setPosition(-0.1 * pitch_velocity)
+        self.__camera_roll.setPosition(
+            self.__clamp(-0.115 * roll_velocity, self.__gimbal_limits['roll']))
+        self.__camera_pitch.setPosition(
+            self.__clamp(-0.1 * pitch_velocity, self.__gimbal_limits['pitch']))
 
         # ------------------------------------------------------------------
         # 외부 루프: cmd_vel(m/s) -> 자세 외란
