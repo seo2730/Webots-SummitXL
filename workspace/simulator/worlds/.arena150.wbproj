@@ -7,18 +7,3 @@ centralWidgetVisible: 1
 orthographicViewHeight: 1
 textFiles: -1
 consoles: Console:All:All
-renderingDevicePerspectives: drone1:camera;1;1;0;0
-renderingDevicePerspectives: spot1:left flank camera;1;1;0;0
-renderingDevicePerspectives: spot1:left flank depth;1;1;0;0
-renderingDevicePerspectives: spot1:left head camera;1;1;0;0
-renderingDevicePerspectives: spot1:left head depth;1;1;0;0
-renderingDevicePerspectives: spot1:rear camera;1;1;0;0
-renderingDevicePerspectives: spot1:rear depth;1;1;0;0
-renderingDevicePerspectives: spot1:right flank camera;1;1;0;0
-renderingDevicePerspectives: spot1:right flank depth;1;1;0;0
-renderingDevicePerspectives: spot1:right head camera;1;1;0;0
-renderingDevicePerspectives: spot1:right head depth;1;1;0;0
-renderingDevicePerspectives: ugv1:depth_camera;1;1;0;0
-renderingDevicePerspectives: ugv1:rgb_camera;1;0.941406;0;0
-renderingDevicePerspectives: ugv2:depth_camera;1;1;0;0
-renderingDevicePerspectives: ugv2:rgb_camera;1;0.941406;0;0
