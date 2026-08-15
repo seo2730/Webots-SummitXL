@@ -1,0 +1,307 @@
+# Spot 전용 Nav2 파라미터.
+#
+# 🚨 **속도 관련 절대값은 재측정이 필요하다.** 원래 측정이 시뮬 속도를 23% 고정으로
+#    가정했는데 실제로는 부하에 따라 23~90% 로 변한다. 다시 잴 때는 odom 헤더의
+#    시뮬 시각으로 구간을 재야 한다 (spot_driver.py 머리말 참고).
+#    안정성 판정(roll/pitch 기반)과 항목 간 상대 비교는 유효하다.
+#
+# nav2.yaml(UGV 기준)의 사본이며, **아래 표의 값만 다르다.** 그 밖의 항목은 nav2.yaml 이
+# 원본이므로, 공통 설정을 고칠 때는 두 파일을 같이 봐야 한다.
+#
+# 왜 따로 필요한가 — Spot 은 cmd_vel 의 의미와 한계가 지상 차량과 다르다.
+#
+#   spot_driver.py:  StepLength = step_from_speed(linear.x[m/s]),  상한 MAX_STEP_LENGTH(0.080)
+#                    YawRate    = YAW_PER_RADPS(1.9) * angular.z[rad/s], 상한 MAX_YAW_RATE(0.5)
+#   -> 현재 케이던스 운용점(swing 0.12 / stepV 3.0)에서 약 0.58 m/s, 0.263 rad/s 가 최대.
+#      보폭 하한(0.015) 때문에 약 0.149 m/s 아래도 못 낸다.
+#
+# ✅ 2026-08-16: spot_driver 가 cmd_vel 을 **실제 단위(m/s, rad/s)로 받도록 고쳤다.**
+#    전진은 비선형(v = SPEED_COEF * L^0.81), 회전은 선형(YAW_PER_RADPS) — 그쪽 주석에 근거.
+#    그래서 아래 상한은 이제 "로봇이 낼 수 있는 최대 실제 속도"를 그대로 적는다.
+#
+# 고치기 전의 실측값 — 이 표에서 환산 계수를 역산했다:
+#
+#   linear.x   0.100  0.200  0.333  0.500  1.000
+#   실제 m/s   0.096  0.169  0.256  0.249  0.249    <- 0.333 부터 포화
+#
+#   angular.z  0.200  0.300  0.500  0.800
+#   실제 rad/s 0.106  0.164  0.264  0.265           <- 0.500 부터 포화
+#
+# | 항목 | UGV | Spot | 근거 |
+# |---|---|---|---|
+# | footprint | 0.7 x 0.5 | 1.1 x 0.5 | 몸통 실측 그대로. **폭은 UGV와 같게 둔다** |
+# | **컨트롤러** | DWB | **RPP** | 속도 샘플링 대신 경로 추종. 배회 2~5x -> 1~2x (실측). DWB 전용 항목(max_vel_x, acc_lim_x, sim_time, vx_samples)은 **사라졌다** |
+# | `desired_linear_vel` | (max_vel_x 0.5) | **0.55** | **케이던스 스윕**으로 정한 값(spot_driver.py 표). 0.578 실측 -> 95% |
+# | `rotate_to_heading_angular_vel` | (max_vel_theta 0.3) | **0.26** | 낼 수 있는 최대 각속도 0.263 rad/s |
+# | `regulated_linear_scaling_min_speed` | — | **0.15** | 보폭 하한에서 나오는 최저 속도(0.149 m/s) |
+# | 리커버리 spin `max_rotational_vel` | 1.0 | **0.26** | 낼 수 없는 속도를 목표로 삼으면 리커버리가 시간 초과로 실패한다 |
+# | inflation_radius | 0.6 | 0.85 | 스캔이 0.5 m 안쪽을 못 본다. 아래 ⚠️ 참고 |
+# | cost_scaling_factor | 3.0 | 2.0 | 감쇠를 늦춰 0.5 m 지점의 비용을 119 -> 154 로 올린다 |
+#
+# ⚠️ footprint 폭을 함부로 키우지 말 것. NavFn 은 **내접 반경 안쪽을 통행 불가**로 본다.
+#    폭을 0.5 -> 0.6 으로 늘렸더니 내접 반경이 0.25 -> 0.30 이 되어, 가구 사이 간격에서
+#    "GridBased: failed to create plan" 으로 전역 경로가 아예 안 나왔다(실측).
+#    Spot 의 다리는 주로 앞뒤로 스윙하므로 좌우로는 몸통보다 넓어지지 않는다.
+#    길이(1.1 m)만 UGV보다 길게 잡는 것이 맞다.
+#
+# ⚠️ **자기 몸 끝의 장애물이 안 보인다.** 병합 스캔의 range_min 이 0.5 m 인데
+#    footprint 반길이는 0.55 m 다. 즉 0.5 m 안쪽은 코스트맵에 아예 안 들어오고,
+#    컨트롤러는 비어 있는 줄 알고 계속 명령을 낸다 — 접촉 사고의 주원인이다.
+#
+#    인플레이션만으로는 **막을 수 없다.** 치명 판정은 footprint 의 내접 반경
+#    (폭 0.5 -> 0.25 m)이 정하고, inflation_radius 는 그 바깥의 비용 기울기일 뿐이다.
+#    그래서 반경을 넓히고 감쇠(cost_scaling_factor)를 늦춰 0.5 m 지점 비용을 올렸다.
+#
+#      cost = 253 * exp(-scaling * (거리 - 내접반경 0.25))
+#      0.5 m 에서:  3.0/0.6  -> 119     |  2.0/0.85 -> 154
+#      0.7 m 에서:  3.0/0.6  ->  60     |  2.0/0.85 ->  95
+#
+#    대가: 좁은 통로가 더 비싸진다. 계획이 자주 실패하면 이 두 값을 먼저 되돌린다.
+#    근본 해결은 range_min 을 낮추거나 근접 센서를 다는 것이다.
+#
+# ⚠️ 보행 하한(보폭 0.015 = 현재 운용점에서 약 0.149 m/s)은 물리적 제약이라 없앨 수 없다.
+#    없애면 발이 땅에서 안 떨어진다. 대신 **컨트롤러에게 알려서** 못 내는 속도를 계획하지
+#    않게 했다 (RPP 의 regulated_linear_scaling_min_speed = 0.15. DWB 를 쓰던 시절에는
+#    min_vel_x / min_speed_xy 였다). 알려주기 전에는 컨트롤러가 못 내는 저속 궤적을
+#    골라 놓고 실제로는 더 빨리 나가서 목표를 지나쳤다.
+#    대가: "아주 천천히 접근"이 불가능하다. xy_goal_tolerance 를 0.5 아래로 줄이지 말 것.
+#
+# ⚠️ 이 상한들은 spot_driver.py 의 SPEED_COEF / YAW_PER_RADPS / MAX_* / 케이던스와 한 쌍이다.
+#    한쪽만 고치면 DWB 의 예측이 다시 어긋난다.
+
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: odom
+    bt_loop_duration: 500
+    transform_tolerance: 10.0
+    # default_bt_xml_filename: "navigate_to_pose.xml"
+    default_bt_xml_filename: "navigate_to_pose_w_replanning_and_recovery.xml"
+    plugins:
+    - nav2_compute_path_to_pose_action_bt_node
+    - nav2_follow_path_action_bt_node
+    - nav2_back_up_action_bt_node
+    - nav2_spin_action_bt_node
+    - nav2_wait_action_bt_node
+    - nav2_clear_costmap_service_bt_node
+    - nav2_is_stuck_condition_bt_node
+    - nav2_goal_reached_condition_bt_node
+    - nav2_goal_updated_condition_bt_node
+    - nav2_initial_pose_received_condition_bt_node
+    - nav2_reinitialize_global_localization_service_bt_node
+    - nav2_rate_controller_bt_node
+    - nav2_distance_controller_bt_node
+    - nav2_speed_controller_bt_node
+    - nav2_recovery_node_bt_node
+    - nav2_pipeline_sequence_bt_node
+    - nav2_round_robin_node_bt_node
+    - nav2_transform_available_condition_bt_node
+    - nav2_time_expired_condition_bt_node
+    - nav2_distance_traveled_condition_bt_node
+
+bt_navigator_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 10.0      # 🌟 [수정] Webots 부하를 줄이기 위해 10Hz로 감소
+    min_x_velocity_threshold: 0.00
+    min_y_velocity_threshold: 0.0
+    min_theta_velocity_threshold: 0.00
+    transform_tolerance: 10.0        # 🌟 [수정/유지] TF 지연 1초 허용
+    controller_plugins: ["FollowPath"]
+
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.5
+      yaw_goal_tolerance: 3.14
+      stateful: True
+
+    # 🌟 Regulated Pure Pursuit — DWB 를 대체한다.
+    #
+    # 왜 바꿨나: DWB 는 **속도 공간을 샘플링**해 궤적을 시뮬레이션하고 고른다.
+    # 그래서 "명령한 속도로 실제로 움직인다"는 로봇 모델이 정확해야 하는데,
+    # Spot 은 보행 로봇이라 그 가정이 약하다(보폭->속도 비선형, 최소 속도 존재,
+    # 회전이 느림). 모델이 조금만 틀려도 매 주기 다른 궤적을 골라 배회한다 —
+    # 실측에서 직선거리의 2~5 배를 걸었다.
+    #
+    # RPP 는 경로 위의 **전방 주시점(lookahead)** 을 따라가는 기하학적 추종이라
+    # 속도 모델 오차에 훨씬 둔감하고, 느린 로봇에 잘 맞는다. 샘플링이 없어
+    # vx_samples / sim_time 같은 항목이 통째로 사라지고 CPU 도 줄어든다
+    # (군집 관점에서도 이득 — 로봇마다 붙는 비용이다).
+    FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      desired_linear_vel: 0.55          # 케이던스 튜닝 후 실측 최대 0.578 의 95%
+      # 전방 주시 거리. 짧으면 경로에 딱 붙지만 흔들리고, 길면 부드럽지만 모서리를 자른다.
+      # Spot 은 몸이 1.1 m 라 그보다 조금 긴 값이 안정적이다.
+      lookahead_dist: 0.8
+      min_lookahead_dist: 0.4
+      max_lookahead_dist: 1.2
+      lookahead_time: 3.0
+      use_velocity_scaled_lookahead_dist: true
+      transform_tolerance: 10.0
+      # 회전이 느린 로봇이라(최대 0.26 rad/s) 굽은 구간에서 속도를 줄여야 따라간다.
+      use_regulated_linear_velocity_scaling: true
+      regulated_linear_scaling_min_radius: 0.6
+      regulated_linear_scaling_min_speed: 0.15   # 보폭 하한에서 나오는 최저 속도
+      # 장애물 근처 감속. 스캔이 0.5 m 안쪽을 못 보는 것에 대한 추가 안전장치다.
+      use_cost_regulated_linear_velocity_scaling: true
+      cost_scaling_dist: 0.6
+      cost_scaling_gain: 1.0
+      inflation_cost_scaling_factor: 2.0         # 코스트맵 값과 반드시 같아야 한다
+      # 제자리 회전으로 경로 방향을 먼저 맞춘다.
+      # ⚠️ 임계각을 작게 잡으면 안 된다. Spot 은 최대 0.26 rad/s 라 90도 도는 데만
+      #    시뮬 6초가 걸린다. 0.6 rad(34도)으로 뒀더니 조금만 방향이 틀어져도 제자리
+      #    회전에 들어가 목표 시간을 다 썼다. 1.0 rad(57도) 이상일 때만 제자리 회전하고,
+      #    그보다 작으면 걸으면서 맞춘다.
+      use_rotate_to_heading: true
+      rotate_to_heading_min_angle: 1.0
+      rotate_to_heading_angular_vel: 0.26        # 낼 수 있는 최대 각속도
+      max_angular_accel: 1.0
+      allow_reversing: false
+      max_robot_pose_search_dist: 10.0
+      use_interpolation: true
+
+
+controller_server_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.5
+      global_frame: odom
+      robot_base_frame: base_link
+      transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      use_sim_time: True
+      rolling_window: true
+      width: 6
+      height: 6
+      resolution: 0.1
+      footprint: "[[-0.55, -0.25], [-0.55, 0.25], [0.55, 0.25], [0.55, -0.25]]"
+      plugins: ["obstacle_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 2.0
+        inflation_radius: 0.85
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        pointcloud:
+          topic: scan
+          #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          #max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      always_send_full_costmap: True
+  local_costmap_client:
+    ros__parameters:
+      use_sim_time: True
+  local_costmap_rclcpp_node:
+    ros__parameters:
+      use_sim_time: True
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      use_sim_time: True
+      footprint: "[[-0.55, -0.25], [-0.55, 0.25], [0.55, 0.25], [0.55, -0.25]]"
+      lethal_cost_threshold: 60
+      resolution: 0.1
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        pointcloud:
+          topic: scan
+          #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          #max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+        map_topic: map
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 2.0
+        inflation_radius: 0.85
+      always_send_full_costmap: True
+  global_costmap_client:
+    ros__parameters:
+      use_sim_time: True
+  global_costmap_rclcpp_node:
+    ros__parameters:
+      use_sim_time: True
+
+map_saver:
+  ros__parameters:
+    use_sim_time: True
+    save_map_timeout: 5000
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 2.0  # 🌟 [수정] 20.0 -> 10.0 Hz
+    use_sim_time: True
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: true
+      allow_unknown: true
+
+planner_server_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+behavior_server:
+  ros__parameters:
+    use_sim_time: True
+    # 🌟 리커버리(spin/backup)가 쓰는 프레임. 네임스페이스가 안 붙으면 리커버리가
+    # 전부 Abort 되고, 그 여파로 목표까지 통째로 실패한다.
+    #
+    # ⚠️ 파라미터 이름은 `global_frame` 이다 (`local_frame` 이 아니다 — Humble 의
+    #    nav2_behaviors 에는 그런 파라미터가 없어서 써 봐야 조용히 무시된다).
+    #    다만 여기 값은 실제로 안 쓰인다. RewrittenYaml 의 `global_frame` 치환이
+    #    이 값을 {ns}/map 으로 바꿔 버리기 때문에, nav2.launch.py 가 behavior_server
+    #    노드에서 {ns}/odom 으로 다시 덮어쓴다. 근거는 그쪽 주석에 있다.
+    global_frame: odom
+    robot_base_frame: base_link
+    # 🚨 회전 한계는 **노드 레벨**에 둬야 한다. `spin:` 아래에 중첩하면 조용히 무시되고
+    #    Nav2 기본값(1.0)이 쓰인다 — behavior_server 의 global_frame 과 같은 부류의 함정이다.
+    #    Spot 은 최대 0.263 rad/s 라 1.0 을 주면 낼 수 없는 속도를 목표로 삼고
+    #    "Exceeded time allowance before reaching the Spin goal" 로 리커버리가 실패한다.
+    max_rotational_vel: 0.26
+    min_rotational_vel: 0.10
+    rotational_acc_lim: 1.0
+    plugins: ["spin", "backup", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+      simulate_ahead_time: 2.0
+      transform_timeout: 1.0          # 🌟 [수정] 회전 시 TF 타임아웃 1초로 연장
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+      transform_timeout: 1.0          # 🌟 [수정] 후진 시 TF 타임아웃 1초로 연장
+    wait:
+      plugin: "nav2_behaviors/Wait"
+
+robot_state_publisher:
+  ros__parameters:
+    use_sim_time: True

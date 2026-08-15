@@ -197,10 +197,15 @@ planner_server_rclcpp_node:
 behavior_server:
   ros__parameters:
     use_sim_time: True
-    # 🌟 [수정] 리커버리(spin/backup)가 쓰는 프레임. 키가 없으면 기본값 "odom"/"base_link"
-    # (네임스페이스 없음)를 찾다가 실패해서 리커버리가 전부 Abort됨.
-    # 실제 값은 nav2.launch.py의 RewrittenYaml이 {namespace}/... 로 바꿔줌.
-    local_frame: odom
+    # 🌟 리커버리(spin/backup)가 쓰는 프레임. 네임스페이스가 안 붙으면 리커버리가
+    # 전부 Abort 되고, 그 여파로 목표까지 통째로 실패한다.
+    #
+    # ⚠️ 파라미터 이름은 `global_frame` 이다 (`local_frame` 이 아니다 — Humble 의
+    #    nav2_behaviors 에는 그런 파라미터가 없어서 써 봐야 조용히 무시된다).
+    #    다만 여기 값은 실제로 안 쓰인다. RewrittenYaml 의 `global_frame` 치환이
+    #    이 값을 {ns}/map 으로 바꿔 버리기 때문에, nav2.launch.py 가 behavior_server
+    #    노드에서 {ns}/odom 으로 다시 덮어쓴다. 근거는 그쪽 주석에 있다.
+    global_frame: odom
     robot_base_frame: base_link
     plugins: ["spin", "backup", "wait"]
     spin:

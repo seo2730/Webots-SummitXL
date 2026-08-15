@@ -1,4 +1,5 @@
 #VRML_SIM R2025a utf8
+IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMediumSensorized.proto"
 IMPORTABLE EXTERNPROTO "../protos/SpotSensorized.proto"
 IMPORTABLE EXTERNPROTO "../protos/SummitXlSteelSensorized.proto"
 IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMedium.proto"

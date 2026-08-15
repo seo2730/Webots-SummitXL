@@ -53,7 +53,14 @@ def generate_launch_description():
     remappings = [
                     ('/tf', '/tf'),
                     ('/tf_static', '/tf_static'),
-                    ('cmd_vel', ['/', namespace, '/cmd_vel']),
+                    # 🌟 Nav2 가 속도를 내보낼 토픽. 기본은 로봇의 `cmd_vel` 이지만
+                    # 인자로 바꿀 수 있다.
+                    #
+                    # 드론이 이걸 쓴다. 드론은 Nav2 와 드라이버 사이에
+                    # local_altitude_avoider 를 끼워서 `linear.z`(고도)만 따로 채운다.
+                    # Nav2 는 `linear.z` 를 항상 0 으로 두므로 z 축이 통째로 비어 있고,
+                    # 그래서 수평(Nav2)과 수직(회피기)이 서로 싸우지 않는다.
+                    ('cmd_vel', LaunchConfiguration('cmd_vel_topic')),
                      ('/odom', ['/', namespace, '/odom']),
                  ]
     # remappings = []
@@ -66,7 +73,13 @@ def generate_launch_description():
         'global_frame': [namespace, '/map'],
         'local_frame': [namespace, '/odom'], # 🌟 behavior_server(리커버리)용 odom 프레임
         'odom_topic':  [namespace, '/odom'],
-        'map_topic': ['/', namespace, '/map'],
+        # 🌟 static layer 가 구독할 맵. 기본은 `/{ns}/map` 이지만 인자로 바꿀 수 있다.
+        #
+        # 드론이 이걸 쓴다. 드론의 `/{ns}/map` 은 **여러 고도의 합집합**이라
+        # 자기 플래너에 주면 지금 고도에서는 뚫려 있는 곳을 못 지나간다.
+        # 그래서 드론은 `map_topic:=/{ns}/map_active`(현재 순항 고도 한 층)를 넘긴다.
+        # 자세한 근거는 webots_python/drone_layer_mapper.py 모듈 주석.
+        'map_topic': LaunchConfiguration('map_topic'),
         'default_bt_xml_filename': default_bt_xml_filename,
         'autostart': autostart,
         'map_subscribe_transient_local': map_subscribe_transient_local
@@ -110,6 +123,15 @@ def generate_launch_description():
             'map_subscribe_transient_local', default_value='false',
             description='Whether to set the map subscriber QoS to transient local'),
 
+        DeclareLaunchArgument(
+            'map_topic', default_value=['/', namespace, '/map'],
+            description='static layer 가 구독할 맵 토픽. 드론은 /{ns}/map_active 를 넘긴다'),
+
+        DeclareLaunchArgument(
+            'cmd_vel_topic', default_value=['/', namespace, '/cmd_vel'],
+            description='Nav2 가 속도를 내보낼 토픽. 드론은 /{ns}/cmd_vel_nav 를 넘겨 '
+                        'local_altitude_avoider 를 중간에 끼운다'),
+
         Node(
             package='nav2_controller',
             executable='controller_server',
@@ -135,7 +157,24 @@ def generate_launch_description():
             name='behavior_server',
             namespace=namespace,
             output='screen',
-            parameters=[configured_params],
+            # 🌟 local_costmap 과 같은 이유의 예외 처리다.
+            #
+            # behavior_server(spin/backup)가 쓰는 프레임 파라미터의 이름은 Humble 에서
+            # `global_frame` 이고, 기본값이 네임스페이스 없는 "odom" 이다. 위쪽
+            # param_substitutions 의 `global_frame` 은 `{ns}/map` 이라 여기엔 맞지 않고,
+            # 애초에 nav2.yaml 의 behavior_server 블록에 그 키가 없으면 RewrittenYaml 이
+            # 바꿀 대상 자체가 없어서 기본값 "odom" 이 그대로 남는다.
+            #
+            # 그러면 리커버리가 `odom` 프레임을 찾다가 매번 즉시 실패한다.
+            #   [transformPoseInTargetFrame] target frame "odom" does not exist
+            #   [behavior_server] Initial checks failed for spin/backup -> Aborting
+            # 주행 자체는 되는데 리커버리가 전부 죽으므로, BT 가 리커버리를 한 번이라도
+            # 타는 순간(경로 재계산 지연 등) 목표가 통째로 ABORT 된다. 실측으로 확인.
+            #
+            # 그래서 노드 레벨에서 직접 덮어쓴다 (노드 파라미터가 yaml 보다 우선).
+            parameters=[configured_params,
+                        {'global_frame': [namespace, '/odom']}
+                        ],
             remappings=remappings),
 
         Node(

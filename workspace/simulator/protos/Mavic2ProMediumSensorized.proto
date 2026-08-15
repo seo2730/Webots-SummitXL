@@ -1,0 +1,133 @@
+#VRML_SIM R2025a utf8
+# license: Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+# license url: https://cyberbotics.com/webots_assets_license
+# keywords: robot/aerial
+# 라이다를 얹은 Mavic2ProMedium 래퍼.
+#
+# 왜 필요한가:
+#   순정 Mavic2ProMedium 에는 거리 측정 센서가 없어서 드론만 SLAM 을 못 돌렸다
+#   (robot_types.DRONE.has_map 이 False 였던 이유). UGV·Spot 과 같은 방식으로
+#   센서를 PROTO 안에 넣어 두면 소환 문자열은 그대로 5줄이면서 몸에는 라이다가 붙는다.
+#
+#   뎁스카메라(Spot 방식) 대신 라이다를 고른 이유:
+#     - UGV 와 파이프라인이 100% 같다 (Velodyne -> pointcloud_to_laserscan -> slam_toolbox).
+#       뎁스는 시야를 채우려고 5개 + multi_scan_merger 가 필요해 로봇당 노드가 6개 늘어난다.
+#     - 라이다 1개로 360°. 드론은 제자리 요잉이 잦아 이 차이가 크다.
+#
+# 소환 방법 (webots_robot_spawner):
+#   월드에 `IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMediumSensorized.proto"` 선언 필요.
+#   일반 EXTERNPROTO 로는 런타임 주입이 실패한다.
+#
+# 디바이스 이름은 Mavic2ProMedium.urdf.xacro 가 참조하므로 **절대 바꾸면 안 된다**:
+#   Velodyne_VLP_16
+#   (나머지 gps / inertial unit / gyro / compass / camera 는 순정 PROTO 안에 있다)
+
+EXTERNPROTO "Mavic2ProMedium.proto"
+EXTERNPROTO "VelodyneVLP-16.proto"
+
+PROTO Mavic2ProMediumSensorized [
+  field SFVec3f    translation     0 0 0.13            # Is `Pose.translation`.
+  field SFRotation rotation        0 0 1 0             # Is `Pose.rotation`.
+  field SFString   name            "drone"             # Is `Robot.name`. ROS 2 네임스페이스로도 쓰인다.
+  field SFString   controller      "<extern>"          # Is `Robot.controller`.
+  field MFString   controllerArgs  []                  # Is `Robot.controllerArgs`.
+  field SFString   window          "<generic>"         # Is `Robot.window`.
+  field SFString   customData      ""                  # Is `Robot.customData`.
+  field SFBool     supervisor      FALSE               # Is `Robot.supervisor`.
+  field SFBool     synchronization TRUE                # Is `Robot.synchronization`. 소환 시에는 FALSE 로 넣는다.
+  field MFNode     cameraSlot      [ Camera { width 400 height 240 } ]  # Is `Mavic2ProMedium.cameraSlot`.
+  field SFBool     lidarPhysics    FALSE               # 라이다에 질량을 줄 것인가 (아래 ⚠️ 참고).
+  field MFNode     extraBodySlot   []                  # bodySlot 에 **추가로** 얹을 노드. 라이다는 그대로 유지된다.
+]
+{
+  Mavic2ProMedium {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    window IS window
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    cameraSlot IS cameraSlot
+    bodySlot [
+      # 높이 0.12 m 는 계산해서 고른 값이다. 더 낮추면 기체가 자기 광선을 가린다.
+      #
+      #   기체 동체 윗면      z = +0.031, 반경 0.27 (뒤쪽 끝)
+      #   랜딩기어 윗면       z = -0.018, 반경 0.323
+      #   프로펠러 회전면     z = -0.064, 반경 0.46 (날개 끝)
+      #
+      # 이 라이다의 수직 시야는 30°(±15°)다 — VelodynePuck 의 두 변형 중 넓은 쪽이라
+      # 헤드리스로 직접 재서 확인했다(wb_lidar_get_vertical_fov = 0.5236).
+      # 가장 아래 광선은 반경 r 에서 r*tan15° = 0.268r 만큼 내려가므로, 라이다가
+      # z=0.12 일 때 위 세 지점에서 광선 높이는 0.048 / 0.034 / -0.003 이고
+      # 전부 기체 표면보다 위다 (여유 17 / 51 / 61 mm).
+      #
+      # ⚠️ 왜 이걸 따지는가 — 이 라이다는 minRange 가 1 m 다. 기체는 그 안쪽이라
+      #    "가짜 장애물"로 찍히지는 않지만, **광선을 가리기는 한다.** Webots 는
+      #    minRange 보다 가까운 반사를 minRange 로 잘라 내보내므로, 가려진 방향은
+      #    정확히 1 m 지점에 벽이 있는 것처럼 보이고 그 너머는 영영 안 보인다.
+      #    z 를 낮추거나 lidarPhysics 를 켜서 호버 자세가 기우는 순간 이 일이 생긴다.
+      #
+      # 검증: 20x20 아레나 한가운데 2 m 고도에 수평으로 고정하고 전체 광선을 읽으면
+      #   finite=34464  min=8.150  max=14.239  minRange 로 잘린 값 0개
+      # min 8.150 은 최하단 광선이 바닥에 닿는 거리(2.12/sin15° = 8.19)와 일치하고,
+      # 수평 광선은 벽까지 10.002 m 로 읽혔다. 즉 자기 몸을 전혀 보지 않는다.
+      VelodyneVLP-16 {
+        translation 0 0 0.12
+        name "Velodyne_VLP_16"
+        # ⚠️ 기본값 FALSE — 라이다에 질량을 주지 않는다.
+        #
+        # VLP-16 실물은 0.83 kg 이고 기체 본체는 2.8 kg 이라 켜면 +30% 다.
+        # drone_driver.py 의 K_VERTICAL_THRUST(68.5)는 현재 질량에서 호버하도록
+        # 맞춰 둔 값이라(추력 ∝ ω², 즉 ω_hover ∝ √m) 질량이 늘면 그 값부터
+        # 다시 잡아야 하고, centerOfMass 도 위로 올라가 자세 게인까지 흔들린다.
+        # 매핑용 센서를 다는 것이 목적이므로 기본은 무게 없는 센서로 둔다.
+        #
+        # 실기체의 탑재 중량 영향까지 보고 싶으면 TRUE 로 켜되, drone_setup.md 의
+        # 헤드리스 하네스로 호버 추력을 다시 재고 K_VERTICAL_THRUST 를 고쳐야 한다.
+        enablePhysics IS lidarPhysics
+      }
+      # 하향 뎁스센서. 라이다만으로는 **발밑이 통째로 안 보인다**.
+      #
+      # 라이다의 가장 아래 광선은 -15° 이므로, 고도 h 에서 바닥에 닿는 곳은 수평
+      # h/tan15° = 3.73h 지점이다. 2 m 로 날면 **반경 7.5 m 짜리 장님 원반**이
+      # 드론 바로 아래에 생긴다 (minRange 1 m 까지 겹쳐서 더 나쁘다).
+      # 층을 바꿔 장애물을 넘으려면 "지금 아래로 내려가도 되나"를 알아야 하는데,
+      # 그 판단 근거가 정확히 이 원반 안에 있다. 그래서 이 센서가 필요하다.
+      #
+      # 시야 120°(±60°) → 고도 h 에서 반경 h*tan60° = 1.73h 를 덮는다 (2 m 에서 3.46 m).
+      # 라이다가 7.5 m 밖을 맡으므로 그 사이 고리는 비지만, 드론이 이동하면 채워진다.
+      # 누적 지도를 쓰는 구조라 이 정도 공백은 문제가 되지 않는다.
+      #
+      # 해상도는 일부러 작게 잡았다(64x48 = 3072점). 군집을 돌릴 때 드론마다 붙는
+      # 비용이라 화질보다 개수가 중요하다. 바닥까지의 거리를 재는 용도라 이 정도면 된다.
+      #
+      # ⚠️ Webots 의 RangeFinder 는 자기 프레임의 +x 를 본다. y 축 +90° 회전이
+      #    +x 를 -z 로 보내므로 이 rotation 이 "똑바로 아래"다.
+      #
+      # ⚠️ 반환값은 **광축 방향 평면 깊이**지 방사거리가 아니다. 그래서 아래가 평평하면
+      #    전 화소가 같은 값으로 읽힌다 (검증할 때 이걸 모르면 "고장" 으로 오해한다).
+      #
+      # 검증: 고도 2 m 수평 고정 + 발밑에 높이 1 m 상자.
+      #   깊이 범위 0.880 ~ 1.880 m
+      #   상자 위(0.88) 1134 화소 / 바닥(1.88) 1938 화소 / 애매한 값 0
+      # 센서가 base_link 아래 0.12 m 이므로 지상고는 1.88 m 이고 둘 다 정확히 맞는다.
+      # 즉 "여기서 내려가면 무엇에 닿는가" 를 화소 단위로 구분한다.
+      RangeFinder {
+        translation -0.12 0 -0.12
+        rotation 0 1 0 1.5708
+        name "down_depth"
+        width 64
+        height 48
+        fieldOfView 2.0944
+        minRange 0.05
+        maxRange 10.0
+      }
+      Group {
+        children IS extraBodySlot
+      }
+    ]
+  }
+}
