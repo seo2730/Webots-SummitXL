@@ -1,8 +1,7 @@
 #VRML_SIM R2025a utf8
-IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMediumSensorized.proto"
 IMPORTABLE EXTERNPROTO "../protos/SpotSensorized.proto"
 IMPORTABLE EXTERNPROTO "../protos/SummitXlSteelSensorized.proto"
-IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMedium.proto"
+IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMediumSensorized.proto"
 # gen_world.py 가 생성한 월드 — 직접 고치지 말고 스크립트를 고쳐 다시 생성할 것.
 #
 # 외부 PROTO 의존이 없다. 바닥·벽·선반·기둥이 전부 plain Solid + Box 라서
@@ -50,7 +49,7 @@ Solid {
   }
 }
 Solid {
-  translation 0.000 0.000 -0.015
+  translation 0.000 0.000 0.003
   children [
     Shape {
       appearance PBRAppearance {
@@ -59,14 +58,11 @@ Solid {
         metalness 0
       }
       geometry Box {
-        size 76.000 76.000 0.030
+        size 76.000 76.000 0.003
       }
     }
   ]
   name "building_floor"
-  boundingObject Box {
-    size 76.000 76.000 0.030
-  }
 }
 Solid {
   translation -12.500 -37.750 1.500
