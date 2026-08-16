@@ -1,8 +1,7 @@
 #VRML_SIM R2025a utf8
-IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMediumSensorized.proto"
 IMPORTABLE EXTERNPROTO "../protos/SpotSensorized.proto"
 IMPORTABLE EXTERNPROTO "../protos/SummitXlSteelSensorized.proto"
-IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMedium.proto"
+IMPORTABLE EXTERNPROTO "../protos/Mavic2ProMediumSensorized.proto"
 # gen_world.py 가 생성한 월드 — 직접 고치지 말고 스크립트를 고쳐 다시 생성할 것.
 #
 # 외부 PROTO 의존이 없다. 바닥·벽·선반·기둥이 전부 plain Solid + Box 라서
@@ -13,6 +12,36 @@ WorldInfo {
   info [ "100x100 m 창고형 작전 지역 (gen_world.py 생성)" ]
   title "warehouse100"
   basicTimeStep 32
+  # my_world.wbt 와 같은 접촉 설정. 빠뜨리면 로봇 거동이 달라진다.
+  #
+  # SummitXL 은 메카넘 휠이라 롤러가 45도로 누워 있다. 그 롤러 방향으로만 미끄러져야
+  # 게걸음(홀로노믹)이 되는데, ContactProperties 가 없으면 Webots 가 등방성 마찰
+  # (사방으로 똑같이 안 미끄러짐)을 준다. 그러면 옆으로 못 가고 앞뒤로만 간다.
+  # coulombFriction [0, 2, 0] + frictionRotation 이 그 이방성을 만든다.
+  #
+  # softCFM 은 접촉을 아주 약간 무르게 만든다. 완전 강체 접촉은 솔버가 풀기 어렵다.
+  contactProperties [
+    ContactProperties {
+      material1 "InteriorWheelMat"
+      coulombFriction [ 0, 2, 0 ]
+      frictionRotation -0.785398 0
+      bounce 0
+      forceDependentSlip [ 10, 0 ]
+      softCFM 0.0001
+    }
+    ContactProperties {
+      material1 "ExteriorWheelMat"
+      coulombFriction [ 0, 2, 0 ]
+      frictionRotation 0.785398 0
+      bounce 0
+      forceDependentSlip [ 10, 0 ]
+      softCFM 0.0001
+    }
+    ContactProperties {
+      material1 "slope"
+      coulombFriction [ 0.5 ]
+    }
+  ]
 }
 Viewpoint {
   orientation -0.35 0.35 0.87 1.7
