@@ -1,19 +1,18 @@
 # Spot 전용 Nav2 파라미터.
 #
-# 🚨 **속도 관련 절대값은 재측정이 필요하다.** 원래 측정이 시뮬 속도를 23% 고정으로
-#    가정했는데 실제로는 부하에 따라 23~90% 로 변한다. 다시 잴 때는 odom 헤더의
-#    시뮬 시각으로 구간을 재야 한다 (spot_driver.py 머리말 참고).
-#    안정성 판정(roll/pitch 기반)과 항목 간 상대 비교는 유효하다.
+# ✅ 속도값은 **arena_s3 에서 odom 시뮬 시각 기준으로 재측정**했다 (2026-08-16).
+#    실측 최고속 0.195 m/s, 최저 0.046 m/s. 자세한 표는 spot_driver.py 머리말.
+#    ⚠️ 다시 잴 때도 벽시계가 아니라 시뮬 시각으로 재야 한다.
 #
 # nav2.yaml(UGV 기준)의 사본이며, **아래 표의 값만 다르다.** 그 밖의 항목은 nav2.yaml 이
 # 원본이므로, 공통 설정을 고칠 때는 두 파일을 같이 봐야 한다.
 #
 # 왜 따로 필요한가 — Spot 은 cmd_vel 의 의미와 한계가 지상 차량과 다르다.
 #
-#   spot_driver.py:  StepLength = step_from_speed(linear.x[m/s]),  상한 MAX_STEP_LENGTH(0.080)
-#                    YawRate    = YAW_PER_RADPS(1.9) * angular.z[rad/s], 상한 MAX_YAW_RATE(0.5)
-#   -> 현재 케이던스 운용점(swing 0.12 / stepV 3.0)에서 약 0.58 m/s, 0.263 rad/s 가 최대.
-#      보폭 하한(0.015) 때문에 약 0.149 m/s 아래도 못 낸다.
+#   spot_driver.py:  StepLength = step_from_speed(linear.x[m/s]),  상한 MAX_STEP_LENGTH(0.090)
+#                    YawRate    = YAW_PER_RADPS(8.11) * angular.z[rad/s], 상한 MAX_YAW_RATE(2.0)
+#   -> 현재 케이던스 운용점(swing 0.12 / stepV 3.0)에서 0.195 m/s, 0.247 rad/s 가 최대.
+#      보폭 하한(0.015) 때문에 약 0.046 m/s 아래도 못 낸다.
 #
 # ✅ 2026-08-16: spot_driver 가 cmd_vel 을 **실제 단위(m/s, rad/s)로 받도록 고쳤다.**
 #    전진은 비선형(v = SPEED_COEF * L^0.81), 회전은 선형(YAW_PER_RADPS) — 그쪽 주석에 근거.
@@ -31,10 +30,10 @@
 # |---|---|---|---|
 # | footprint | 0.7 x 0.5 | 1.1 x 0.5 | 몸통 실측 그대로. **폭은 UGV와 같게 둔다** |
 # | **컨트롤러** | DWB | **RPP** | 속도 샘플링 대신 경로 추종. 배회 2~5x -> 1~2x (실측). DWB 전용 항목(max_vel_x, acc_lim_x, sim_time, vx_samples)은 **사라졌다** |
-# | `desired_linear_vel` | (max_vel_x 0.5) | **0.55** | **케이던스 스윕**으로 정한 값(spot_driver.py 표). 0.578 실측 -> 95% |
-# | `rotate_to_heading_angular_vel` | (max_vel_theta 0.3) | **0.26** | 낼 수 있는 최대 각속도 0.263 rad/s |
-# | `regulated_linear_scaling_min_speed` | — | **0.15** | 보폭 하한에서 나오는 최저 속도(0.149 m/s) |
-# | 리커버리 spin `max_rotational_vel` | 1.0 | **0.26** | 낼 수 없는 속도를 목표로 삼으면 리커버리가 시간 초과로 실패한다 |
+# | `desired_linear_vel` | (max_vel_x 0.5) | **0.15** | 최고속은 0.195 지만 **회전을 얹으면 간헐적으로 넘어진다.** 아래 ⚠️ 참고 |
+# | `rotate_to_heading_angular_vel` | (max_vel_theta 0.3) | **0.24** | 실측 제자리 회전 0.247 rad/s (여유 2 m 자리, 시뮬시각 기준) |
+# | `regulated_linear_scaling_min_speed` | — | **0.05** | 보폭 하한에서 나오는 최저 속도(0.046 m/s) |
+# | 리커버리 spin `max_rotational_vel` | 1.0 | **0.24** | 낼 수 없는 속도를 목표로 삼으면 리커버리가 시간 초과로 실패한다 |
 # | inflation_radius | 0.6 | 0.85 | 스캔이 0.5 m 안쪽을 못 본다. 아래 ⚠️ 참고 |
 # | cost_scaling_factor | 3.0 | 2.0 | 감쇠를 늦춰 0.5 m 지점의 비용을 119 -> 154 로 올린다 |
 #
@@ -44,20 +43,22 @@
 #    Spot 의 다리는 주로 앞뒤로 스윙하므로 좌우로는 몸통보다 넓어지지 않는다.
 #    길이(1.1 m)만 UGV보다 길게 잡는 것이 맞다.
 #
-# ⚠️ **자기 몸 끝의 장애물이 안 보인다.** 병합 스캔의 range_min 이 0.5 m 인데
-#    footprint 반길이는 0.55 m 다. 즉 0.5 m 안쪽은 코스트맵에 아예 안 들어오고,
-#    컨트롤러는 비어 있는 줄 알고 계속 명령을 낸다 — 접촉 사고의 주원인이다.
+# ✅ **자기 몸 끝의 장애물이 안 보이던 문제는 센서 쪽에서 고쳤다.**
 #
-#    인플레이션만으로는 **막을 수 없다.** 치명 판정은 footprint 의 내접 반경
-#    (폭 0.5 -> 0.25 m)이 정하고, inflation_radius 는 그 바깥의 비용 기울기일 뿐이다.
-#    그래서 반경을 넓히고 감쇠(cost_scaling_factor)를 늦춰 0.5 m 지점 비용을 올렸다.
+#    예전에는 병합 스캔의 range_min 이 0.5 m 인데 footprint 반길이가 0.55 m 라
+#    0.5 m 안쪽이 코스트맵에 아예 안 들어왔다 — 접촉 사고의 주원인이었다.
+#    지금은 single_spot_launch.py 에서 **카메라별로** 하한을 준다(머리 0.20 /
+#    옆구리 0.45 / 후방 0.70). 진행 방향은 0.20 m 까지 본다.
+#
+#    그때 인플레이션(0.85 / 2.0)은 그 사각을 **비용으로 메우려던 보정**이었다.
 #
 #      cost = 253 * exp(-scaling * (거리 - 내접반경 0.25))
 #      0.5 m 에서:  3.0/0.6  -> 119     |  2.0/0.85 -> 154
 #      0.7 m 에서:  3.0/0.6  ->  60     |  2.0/0.85 ->  95
 #
-#    대가: 좁은 통로가 더 비싸진다. 계획이 자주 실패하면 이 두 값을 먼저 되돌린다.
-#    근본 해결은 range_min 을 낮추거나 근접 센서를 다는 것이다.
+#    사각이 없어졌으니 이제는 과보정일 수 있다. 대가는 **좁은 통로가 비싸지는 것**
+#    이고, 실제로 NavFn 이 경로를 못 만든 적이 있다. 계획 실패나 과한 배회가 보이면
+#    UGV 값(0.6 / 3.0)으로 되돌려 보는 것이 첫 번째 시도다. 아직 안 해 봤다.
 #
 # ⚠️ 보행 하한(보폭 0.015 = 현재 운용점에서 약 0.149 m/s)은 물리적 제약이라 없앨 수 없다.
 #    없애면 발이 땅에서 안 떨어진다. 대신 **컨트롤러에게 알려서** 못 내는 속도를 계획하지
@@ -76,6 +77,15 @@ bt_navigator:
     robot_base_frame: base_link
     odom_topic: odom
     bt_loop_duration: 500
+    # 🚨 BT 가 액션 서버의 응답을 기다리는 시간(ms). **기본값 20 ms 는 너무 짧다.**
+    #
+    # 이 프로젝트는 로봇 4대 + Webots 가 CPU 를 합계 950% 쓴다(실측). 그 부하에서
+    # controller_server 가 20 ms 안에 응답을 못 하면 BT 가 이렇게 포기한다:
+    #   "Timed out while waiting for action server to acknowledge goal request for follow_path"
+    #   -> follow_path Aborting -> 리커버리 -> Goal failed
+    # 경로 추종은 멀쩡한데(배회 1.0x) 목표가 죽는 원인이었다.
+    server_timeout: 200
+    default_server_timeout: 200
     transform_tolerance: 10.0
     # default_bt_xml_filename: "navigate_to_pose.xml"
     default_bt_xml_filename: "navigate_to_pose_w_replanning_and_recovery.xml"
@@ -115,6 +125,26 @@ controller_server:
     transform_tolerance: 10.0        # 🌟 [수정/유지] TF 지연 1초 허용
     controller_plugins: ["FollowPath"]
 
+    # 🚨 진전 검사기 — **느린 로봇에는 기본값(0.5 m / 10초)이 맞지 않는다.**
+    #
+    # SimpleProgressChecker 가 보는 것은 **이동량뿐이다.** 제자리 회전은 아무리 오래
+    # 해도 진전 0 으로 친다. Spot 의 제자리 회전은 최대 0.247 rad/s 라 90도에 6.4초,
+    # 회전 상한을 올리기 전(0.079 rad/s)에는 20초였다. 기본값 10초로는 회전 도중에
+    # 목표가 통째로 죽었다.
+    #
+    # 실측 로그 — 30초 주기로 정확히 반복됐다:
+    #   controller_server: Failed to make progress
+    #   behavior_server:   Exceeded time allowance before reaching the Spin goal
+    #
+    # 60초면 최대 직진(0.195 m/s)으로 11.7 m, 회전만 해도 최소 100도는 돈다.
+    #
+    # ⚠️ 회전 상한을 올려 근본 원인은 줄였지만(0.079 -> 0.247 rad/s), 이 로봇은
+    #    여전히 느리므로 여유는 넉넉히 둔다.
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.3
+      movement_time_allowance: 60.0
+
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.5
@@ -135,7 +165,18 @@ controller_server:
     # (군집 관점에서도 이득 — 로봇마다 붙는 비용이다).
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_vel: 0.55          # 케이던스 튜닝 후 실측 최대 0.578 의 95%
+      # 🚨 **최고속(0.195)을 그대로 쓰면 안 된다.** 직진만 하면 견디지만 회전이
+      # 얹히는 순간 여유가 0 이 되어 간헐적으로 넘어진다.
+      #
+      # 실측 — 회전 +-0.14 rad/s 를 4초마다 급반전시키며 최대 roll 을 봤다:
+      #   0.19  ->  10.3도 / 45.3도 / 180도(뒤집힘)   같은 조건에서 통과와 넘어짐이 반반
+      #   0.15  ->   5.2도                            ✅ 채택
+      #   0.12  ->   6.0도                            더 낮춰도 나아지지 않는다
+      #
+      # ⚠️ 넘어짐은 **임계값이 아니라 확률**이다. 회전 상한(2.0)·회전 방향 급반전·
+      #    특정 회전 속도는 전부 단독 원인이 아니었다(각각 따로 시험해 배제).
+      #    남는 설명은 운용 속도가 한계에 붙어 있었다는 것이다.
+      desired_linear_vel: 0.15
       # 전방 주시 거리. 짧으면 경로에 딱 붙지만 흔들리고, 길면 부드럽지만 모서리를 자른다.
       # Spot 은 몸이 1.1 m 라 그보다 조금 긴 값이 안정적이다.
       lookahead_dist: 0.8
@@ -144,10 +185,10 @@ controller_server:
       lookahead_time: 3.0
       use_velocity_scaled_lookahead_dist: true
       transform_tolerance: 10.0
-      # 회전이 느린 로봇이라(최대 0.26 rad/s) 굽은 구간에서 속도를 줄여야 따라간다.
+      # 회전이 느린 로봇이라(최대 0.247 rad/s) 굽은 구간에서 속도를 줄여야 따라간다.
       use_regulated_linear_velocity_scaling: true
       regulated_linear_scaling_min_radius: 0.6
-      regulated_linear_scaling_min_speed: 0.15   # 보폭 하한에서 나오는 최저 속도
+      regulated_linear_scaling_min_speed: 0.05   # 보폭 하한에서 나오는 최저 속도 0.046
       # 장애물 근처 감속. 스캔이 0.5 m 안쪽을 못 보는 것에 대한 추가 안전장치다.
       use_cost_regulated_linear_velocity_scaling: true
       cost_scaling_dist: 0.6
@@ -160,7 +201,9 @@ controller_server:
       #    그보다 작으면 걸으면서 맞춘다.
       use_rotate_to_heading: true
       rotate_to_heading_min_angle: 1.0
-      rotate_to_heading_angular_vel: 0.26        # 낼 수 있는 최대 각속도
+      # 실측 제자리 회전 0.247 rad/s (MAX_YAW_RATE 2.0 에서 포화). spot_driver.py 표 참고.
+      # ⚠️ 이 값을 올리려면 드라이버의 MAX_YAW_RATE 부터 올려야 한다. 한 쌍이다.
+      rotate_to_heading_angular_vel: 0.24
       max_angular_accel: 1.0
       allow_reversing: false
       max_robot_pose_search_dist: 10.0
@@ -288,8 +331,8 @@ behavior_server:
     #    Nav2 기본값(1.0)이 쓰인다 — behavior_server 의 global_frame 과 같은 부류의 함정이다.
     #    Spot 은 최대 0.263 rad/s 라 1.0 을 주면 낼 수 없는 속도를 목표로 삼고
     #    "Exceeded time allowance before reaching the Spin goal" 로 리커버리가 실패한다.
-    max_rotational_vel: 0.26
-    min_rotational_vel: 0.10
+    max_rotational_vel: 0.24
+    min_rotational_vel: 0.08
     rotational_acc_lim: 1.0
     plugins: ["spin", "backup", "wait"]
     spin:
