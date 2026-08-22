@@ -85,7 +85,7 @@ PROTO Mavic2ProMediumSensorized [
         # 다시 잡아야 하고, centerOfMass 도 위로 올라가 자세 게인까지 흔들린다.
         # 매핑용 센서를 다는 것이 목적이므로 기본은 무게 없는 센서로 둔다.
         #
-        # 실기체의 탑재 중량 영향까지 보고 싶으면 TRUE 로 켜되, drone_setup.md 의
+        # 실기체의 탑재 중량 영향까지 보고 싶으면 TRUE 로 켜되, 08_DRONE_SETUP.md 의
         # 헤드리스 하네스로 호버 추력을 다시 재고 K_VERTICAL_THRUST 를 고쳐야 한다.
         enablePhysics IS lidarPhysics
       }
