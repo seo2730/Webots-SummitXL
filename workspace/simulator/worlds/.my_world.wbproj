@@ -8,38 +8,38 @@ orthographicViewHeight: 1
 textFiles: -1
 globalOptionalRendering: LidarPointClouds
 consoles: Console:All:All
-renderingDevicePerspectives: Mavic 2 PRO:camera;1;1;0;0
-renderingDevicePerspectives: drone1:camera;1;1;0;0
-renderingDevicePerspectives: drone1:down_depth;1;1;0;0
-renderingDevicePerspectives: drone2:camera;1;1;0;0
-renderingDevicePerspectives: drone3:camera;1;1;0;0
-renderingDevicePerspectives: spot1:left flank camera;1;1;0;0
-renderingDevicePerspectives: spot1:left flank depth;1;1;0;0
-renderingDevicePerspectives: spot1:left head camera;1;1;0;0
-renderingDevicePerspectives: spot1:left head depth;1;1;0;0
-renderingDevicePerspectives: spot1:rear camera;1;1;0;0
-renderingDevicePerspectives: spot1:rear depth;1;1;0;0
-renderingDevicePerspectives: spot1:right flank camera;1;1;0;0
-renderingDevicePerspectives: spot1:right flank depth;1;1;0;0
-renderingDevicePerspectives: spot1:right head camera;1;1;0;0
-renderingDevicePerspectives: spot1:right head depth;1;1;0;0
-renderingDevicePerspectives: spot2:left flank camera;1;1;0;0
-renderingDevicePerspectives: spot2:left flank depth;1;1;0;0
-renderingDevicePerspectives: spot2:left head camera;1;1;0;0
-renderingDevicePerspectives: spot2:left head depth;1;1;0;0
-renderingDevicePerspectives: spot2:rear camera;1;1;0;0
-renderingDevicePerspectives: spot2:rear depth;1;1;0;0
-renderingDevicePerspectives: spot2:right flank camera;1;1;0;0
-renderingDevicePerspectives: spot2:right flank depth;1;1;0;0
-renderingDevicePerspectives: spot2:right head camera;1;1;0;0
-renderingDevicePerspectives: spot2:right head depth;1;1;0;0
-renderingDevicePerspectives: ugv1:depth_camera;1;1;0;0
-renderingDevicePerspectives: ugv1:rgb_camera;1;0.941406;0;0
-renderingDevicePerspectives: ugv2:depth_camera;1;1;0;0
-renderingDevicePerspectives: ugv2:rgb_camera;1;0.941406;0;0
-renderingDevicePerspectives: ugv3:depth_camera;1;1;0;0
-renderingDevicePerspectives: ugv3:rgb_camera;1;0.941406;0;0
-renderingDevicePerspectives: ugv4:depth_camera;1;1;0;0
-renderingDevicePerspectives: ugv4:rgb_camera;1;0.941406;0;0
-renderingDevicePerspectives: ugv5:depth_camera;1;1;0;0
-renderingDevicePerspectives: ugv5:rgb_camera;1;0.941406;0;0
+renderingDevicePerspectives: Mavic 2 PRO:camera;0;1;0;0
+renderingDevicePerspectives: drone1:camera;0;1;0;0
+renderingDevicePerspectives: drone1:down_depth;0;1;0;0
+renderingDevicePerspectives: drone2:camera;0;1;0;0
+renderingDevicePerspectives: drone3:camera;0;1;0;0
+renderingDevicePerspectives: spot1:left flank camera;0;1;0;0
+renderingDevicePerspectives: spot1:left flank depth;0;1;0;0
+renderingDevicePerspectives: spot1:left head camera;0;1;0;0
+renderingDevicePerspectives: spot1:left head depth;0;1;0;0
+renderingDevicePerspectives: spot1:rear camera;0;1;0;0
+renderingDevicePerspectives: spot1:rear depth;0;1;0;0
+renderingDevicePerspectives: spot1:right flank camera;0;1;0;0
+renderingDevicePerspectives: spot1:right flank depth;0;1;0;0
+renderingDevicePerspectives: spot1:right head camera;0;1;0;0
+renderingDevicePerspectives: spot1:right head depth;0;1;0;0
+renderingDevicePerspectives: spot2:left flank camera;0;1;0;0
+renderingDevicePerspectives: spot2:left flank depth;0;1;0;0
+renderingDevicePerspectives: spot2:left head camera;0;1;0;0
+renderingDevicePerspectives: spot2:left head depth;0;1;0;0
+renderingDevicePerspectives: spot2:rear camera;0;1;0;0
+renderingDevicePerspectives: spot2:rear depth;0;1;0;0
+renderingDevicePerspectives: spot2:right flank camera;0;1;0;0
+renderingDevicePerspectives: spot2:right flank depth;0;1;0;0
+renderingDevicePerspectives: spot2:right head camera;0;1;0;0
+renderingDevicePerspectives: spot2:right head depth;0;1;0;0
+renderingDevicePerspectives: ugv1:depth_camera;0;1;0;0
+renderingDevicePerspectives: ugv1:rgb_camera;0;0.941406;0;0
+renderingDevicePerspectives: ugv2:depth_camera;0;1;0;0
+renderingDevicePerspectives: ugv2:rgb_camera;0;0.941406;0;0
+renderingDevicePerspectives: ugv3:depth_camera;0;1;0;0
+renderingDevicePerspectives: ugv3:rgb_camera;0;0.941406;0;0
+renderingDevicePerspectives: ugv4:depth_camera;0;1;0;0
+renderingDevicePerspectives: ugv4:rgb_camera;0;0.941406;0;0
+renderingDevicePerspectives: ugv5:depth_camera;0;1;0;0
+renderingDevicePerspectives: ugv5:rgb_camera;0;0.941406;0;0
