@@ -1,7 +1,6 @@
 import rclpy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState
 import math
 
@@ -77,12 +76,15 @@ class main:
         self.__target_twist = Twist()
         self.__tf_broadcaster = TransformBroadcaster(self.__node)
         
-        # 🌟 [여기 추가!] ugv1만 마스터 시계로 임명합니다.
-        if self.namespace == 'ugv1' or self.namespace == '':
-            self.clock_publisher = self.__node.create_publisher(Clock, '/clock', 10)
-            self.is_clock_master = True
-        else:
-            self.is_clock_master = False
+        # 🚨 여기서 /clock 을 발행하지 않는다. 시계는 master 컨테이너의
+        #    sim_clock_bridge 가 낸다 (04_UGV_SETUP.md 7절 ①).
+        #
+        #    예전에는 네임스페이스가 'ugv1' 일 때만 자기를 시계 마스터로 정했는데,
+        #    브릿지를 도입한 뒤에도 이 코드가 남아 **발행자가 2개**가 됐다. 둘이
+        #    미세하게 다른 시각을 쏘자 구독자 쪽에서 시각이 뒤로 갔고,
+        #    tf2 가 "Detected jump back in time. Clearing TF buffer." 로 버퍼를
+        #    계속 비워서 **Nav2 가 경로를 못 만들었다** (드론이 목표를 받고도
+        #    cmd_vel_nav 를 0건 낸 원인. 실측).
 
         self.gps = self.__robot.getDevice('gps')
         if self.gps:
@@ -129,13 +131,6 @@ class main:
         curr_time = Time()
         curr_time.sec = int(wb_time)
         curr_time.nanosec = int((wb_time - int(wb_time)) * 1e9)
-
-        # 🌟 [여기 추가!] 마스터(ugv1)일 때만 전역 시계를 퍼블리시합니다.
-        if self.is_clock_master:
-            clock_msg = Clock()
-            clock_msg.clock.sec = int(wb_time)
-            clock_msg.clock.nanosec = int((wb_time - int(wb_time)) * 1e9)
-            self.clock_publisher.publish(clock_msg)
 
         vx = self.__target_twist.linear.x
         vy = self.__target_twist.linear.y
