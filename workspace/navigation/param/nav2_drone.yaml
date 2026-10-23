@@ -1,0 +1,248 @@
+# 드론 전용 Nav2 파라미터 — nav2.yaml(UGV) 에서 **두 가지만** 바꿨다.
+#
+#   single_drone.launch.py 가 DRONE_NAV2_PARAMS=nav2_drone.yaml 일 때 쓴다 (기본은 nav2.yaml).
+#
+# 1. 지역 코스트맵에 static layer (map_topic -> 런치가 /{ns}/map_active 로 바꾼다)
+#    🚨 드론에는 /{ns}/scan 이 없다 (Velodyne 점군뿐). 그래서 nav2.yaml 의 obstacle_layer 는
+#       드론에서 **빈 층**이고, 지역 코스트맵이 통째로 0 이다. DWB 는 지역 코스트맵으로 충돌을
+#       검사하므로 드론은 벽을 한 번도 못 본 채 주행한다. 게다가 라이다는 1 m 안쪽을 못 본다.
+#       실측(arena_s3, 2026-09-20): 폭 2.5 m 복도에서 벽면 0.15 m 까지 밀려 붙은 뒤 40분 정지.
+#       그 칸의 전역 비용 99, 지역 비용 0. 빈 방(oneroom)에서는 벽 근처에 갈 일이 없어 안 드러났다.
+#    층 매퍼가 순항 고도 한 층을 계속 갱신하므로 그걸 지역 코스트맵에도 넣으면 된다.
+#
+# 2. 팽창을 넓고 완만하게 (0.6 m / 3.0 -> 1.2 m / 2.5) — 복도 가운데가 가장 싸지도록.
+#    기울기 기반 제어라 옆으로 밀리기 쉬운데, 0.6 m 면 폭 2.5 m 복도 가운데 0.5 m 가
+#    전부 비용 0 이라 경로가 벽 쪽으로 붙어도 벌점이 없다.
+#    폭 2 m 문 가운데 비용 = 252·exp(-2.5·(1.0-0.25)) ≈ 39 — 치명(253)과 멀어 지나간다.
+#
+# 속도·크리틱은 nav2.yaml 과 같다 (비교 변수를 늘리지 않으려고).
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: odom
+    bt_loop_duration: 500
+    transform_tolerance: 10.0
+    # default_bt_xml_filename: "navigate_to_pose.xml"
+    default_bt_xml_filename: "navigate_to_pose_w_replanning_and_recovery.xml"
+    plugins:
+    - nav2_compute_path_to_pose_action_bt_node
+    - nav2_follow_path_action_bt_node
+    - nav2_back_up_action_bt_node
+    - nav2_spin_action_bt_node
+    - nav2_wait_action_bt_node
+    - nav2_clear_costmap_service_bt_node
+    - nav2_is_stuck_condition_bt_node
+    - nav2_goal_reached_condition_bt_node
+    - nav2_goal_updated_condition_bt_node
+    - nav2_initial_pose_received_condition_bt_node
+    - nav2_reinitialize_global_localization_service_bt_node
+    - nav2_rate_controller_bt_node
+    - nav2_distance_controller_bt_node
+    - nav2_speed_controller_bt_node
+    - nav2_recovery_node_bt_node
+    - nav2_pipeline_sequence_bt_node
+    - nav2_round_robin_node_bt_node
+    - nav2_transform_available_condition_bt_node
+    - nav2_time_expired_condition_bt_node
+    - nav2_distance_traveled_condition_bt_node
+
+bt_navigator_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 10.0      # 🌟 [수정] Webots 부하를 줄이기 위해 10Hz로 감소
+    min_x_velocity_threshold: 0.00
+    min_y_velocity_threshold: 0.0
+    min_theta_velocity_threshold: 0.00
+    transform_tolerance: 10.0        # 🌟 [수정/유지] TF 지연 1초 허용
+    controller_plugins: ["FollowPath"]
+
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.5
+      yaw_goal_tolerance: 3.14
+      stateful: True
+
+    # DWB parameters
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: True
+      min_vel_x: 0.0
+      min_vel_y: 0.0
+      max_vel_x: 0.5
+      max_vel_y: 0.0
+      max_vel_theta: 0.3
+      min_speed_xy: 0.0
+      max_speed_xy: 0.5
+      min_speed_theta: 0.0
+      acc_lim_x: 2.5
+      acc_lim_y: 0.5
+      acc_lim_theta: 3.2
+      decel_lim_x: -2.5
+      decel_lim_y: -0.5
+      decel_lim_theta: -3.2
+      vx_samples: 20
+      vy_samples: 5
+      vtheta_samples: 20
+      sim_time: 1.7
+      linear_granularity: 0.05
+      angular_granularity: 0.025
+      transform_tolerance: 10.0
+      trans_stopped_velocity: 0.0
+      short_circuit_trajectory_evaluation: True
+      stateful: True
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      BaseObstacle.scale: 62.0
+      PathAlign.scale: 32.0
+      PathAlign.forward_point_distance: 0.2
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.2
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: -1.0
+
+controller_server_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.5
+      global_frame: odom
+      robot_base_frame: base_link
+      transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      use_sim_time: True
+      rolling_window: true
+      width: 6
+      height: 6
+      resolution: 0.1
+      footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
+      plugins: ["static_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+        map_topic: map
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 2.5
+        inflation_radius: 1.2
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        pointcloud:
+          topic: scan
+          #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          #max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      always_send_full_costmap: True
+  local_costmap_client:
+    ros__parameters:
+      use_sim_time: True
+  local_costmap_rclcpp_node:
+    ros__parameters:
+      use_sim_time: True
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
+      use_sim_time: True
+      footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
+      lethal_cost_threshold: 60
+      resolution: 0.1
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        pointcloud:
+          topic: scan
+          #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
+          #max_obstacle_height: 1.5  # 🌟 [수정] 천장을 장애물로 인식하지 않게 2.0 -> 1.5 정도로 낮춤
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+        map_topic: map
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 2.5
+        inflation_radius: 1.2
+      always_send_full_costmap: True
+  global_costmap_client:
+    ros__parameters:
+      use_sim_time: True
+  global_costmap_rclcpp_node:
+    ros__parameters:
+      use_sim_time: True
+
+map_saver:
+  ros__parameters:
+    use_sim_time: True
+    save_map_timeout: 5000
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 2.0  # 🌟 [수정] 20.0 -> 10.0 Hz
+    use_sim_time: True
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: true
+      allow_unknown: true
+
+planner_server_rclcpp_node:
+  ros__parameters:
+    use_sim_time: True
+
+behavior_server:
+  ros__parameters:
+    use_sim_time: True
+    # 🌟 리커버리(spin/backup)가 쓰는 프레임. 네임스페이스가 안 붙으면 리커버리가
+    # 전부 Abort 되고, 그 여파로 목표까지 통째로 실패한다.
+    #
+    # ⚠️ 파라미터 이름은 `global_frame` 이다 (`local_frame` 이 아니다 — Humble 의
+    #    nav2_behaviors 에는 그런 파라미터가 없어서 써 봐야 조용히 무시된다).
+    #    다만 여기 값은 실제로 안 쓰인다. RewrittenYaml 의 `global_frame` 치환이
+    #    이 값을 {ns}/map 으로 바꿔 버리기 때문에, nav2.launch.py 가 behavior_server
+    #    노드에서 {ns}/odom 으로 다시 덮어쓴다. 근거는 그쪽 주석에 있다.
+    global_frame: odom
+    robot_base_frame: base_link
+    plugins: ["spin", "backup", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+      simulate_ahead_time: 2.0
+      max_rotational_vel: 1.0
+      min_rotational_vel: 0.4
+      rotational_acc_lim: 3.2
+      transform_timeout: 1.0          # 🌟 [수정] 회전 시 TF 타임아웃 1초로 연장
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+      transform_timeout: 1.0          # 🌟 [수정] 후진 시 TF 타임아웃 1초로 연장
+    wait:
+      plugin: "nav2_behaviors/Wait"
+
+robot_state_publisher:
+  ros__parameters:
+    use_sim_time: True

@@ -108,15 +108,38 @@ local_costmap:
       height: 6
       resolution: 0.1
       footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
-      plugins: ["obstacle_layer", "inflation_layer"]
+      # 🚨 static layer 를 지역 코스트맵에도 넣는다. DWB 는 **지역** 코스트맵으로 충돌을
+      #    검사하는데, 이게 비어 있으면 로봇이 벽을 못 본 채 달린다. 실측(arena_s3, 융합 시행):
+      #    UGV 가 문틀에 끼여 자기 칸 비용 99(전역)인데 지역 코스트맵은 100% 0 이었고,
+      #    출발점이 충돌이라 플래너가 401회 실패하며 한 시간 넘게 멈춰 있었다.
+      #    🚨 장애물 층은 **빼 둔다.** 소스 블록 이름을 고쳐 이 층을 살렸더니 코스트맵 갱신
+      #       스레드가 막혀 **롤링 창이 그 자리에 얼어붙었다**(실측: 25초 동안 원점 불변,
+      #       로봇이 창 밖으로 나가 DWB 가 "유효 궤적 0/419"). 같은 시각 드론(장애물 층 없음)
+      #       창은 정상적으로 따라 움직였다. 정적 벽은 static layer 로 충분하다.
+      plugins: ["static_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+        map_topic: map
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.6
+        # 🚨 0.6 -> 0.35 로 줄였다 (2026-10-23). 0.6 이면 폭 1.2 m 복도의 **중앙선만**
+        #    남아, 로봇이 조금만 벗어나도 DWB 가 "유효 궤적 0/419" 를 내고 복구 회전마저
+        #    "Collision Ahead" 로 실패한다. 실측(시드 실험 A): UGV 가 72라운드 동안
+        #    11.7 m 만 움직이고 포기 23회. 같은 시행에서 드론은 490 m 를 돌았다.
+        #    이 월드의 복도는 1.2~1.5 m 가 흔하므로 0.35 가 맞다 (내접 반경 0.25 + 여유).
+        #
+        #    ⚠️ 이것만으로 다 풀리지는 않는다. 위 주석의 "자기 칸 비용 99" 사례처럼
+        #       SLAM 자세가 정적 지도의 벽 안으로 들어가면 출발점이 충돌이라 어떤 팽창
+        #       값에서도 궤적이 안 나온다. 그건 지도 품질 문제다 (score_map_quality.py).
+        cost_scaling_factor: 2.5
+        inflation_radius: 0.35
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
         observation_sources: scan
+        # ⚠️ 블록 이름이 소스 이름(scan)과 달라 이 설정은 실제로 붙지 않는다. 고쳐서 층을
+        #    살렸더니 코스트맵 갱신이 막혔다(위 주석). 정적 벽은 static layer 가 담당한다.
         pointcloud:
           topic: scan
           #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
@@ -149,6 +172,8 @@ global_costmap:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
         observation_sources: scan
+        # ⚠️ 블록 이름이 소스 이름(scan)과 달라 이 설정은 실제로 붙지 않는다. 고쳐서 층을
+        #    살렸더니 코스트맵 갱신이 막혔다(위 주석). 정적 벽은 static layer 가 담당한다.
         pointcloud:
           topic: scan
           #min_obstacle_height: 0.1  # 🌟 [추가] 바닥(0.0)을 장애물로 인식하는 것을 방지
@@ -162,8 +187,8 @@ global_costmap:
         map_topic: map
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.6
+        cost_scaling_factor: 2.5
+        inflation_radius: 0.35   # 지역과 같은 값 — 전역만 보수적이면 경로가 아예 안 나온다
       always_send_full_costmap: True
   global_costmap_client:
     ros__parameters:
