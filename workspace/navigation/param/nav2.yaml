@@ -97,8 +97,10 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 2.5
+      # 🚨 5.0 -> 3.0 Hz (2026-10-23). 지역 코스트맵 갱신이 CPU 의 큰 몫이다.
+      #    컨트롤러가 10Hz 이므로 3Hz 갱신이면 한 번 제어할 때마다 최신 창을 본다.
+      update_frequency: 3.0
+      publish_frequency: 1.0
       global_frame: odom
       robot_base_frame: base_link
       transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
