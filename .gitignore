@@ -54,3 +54,8 @@ CATKIN_IGNORE
 # 새 C 컨트롤러를 추가하면 확장자 없는 리눅스/macOS 바이너리도 여기에 추가할 것
 workspace/simulator/controllers/*/*.exe
 workspace/simulator/controllers/mavic2pro_medium/mavic2pro_medium
+
+# Webots GUI 상태 (창 배치·뷰포인트). 월드를 열 때마다 자동으로 바뀌므로
+# 커밋하면 서브모듈이 늘 dirty 로 뜨고, 다른 PC 의 뷰 설정을 덮어쓴다.
+# 새 클론에서는 Webots 가 처음 열 때 알아서 다시 만든다.
+workspace/simulator/worlds/.*.wbproj
