@@ -86,7 +86,12 @@ class main:
         #    계속 비워서 **Nav2 가 경로를 못 만들었다** (드론이 목표를 받고도
         #    cmd_vel_nav 를 0건 낸 원인. 실측).
 
-        self.gps = self.__robot.getDevice('gps')
+        # 🚨 'robot_gps'(몸 중심)를 먼저 쓴다 (2026-11-18). 기본 PROTO 의 'gps' 는 몸 중심에서
+        #    (-0.365, -0.167) m 에 달려 있어서, 이 값을 odom -> base_link 로 내면 Nav2 의
+        #    footprint 와 라이다 원점(URDF 상 base_link 바로 위)이 실제 몸에서 0.4 m 어긋난다.
+        #    실측: 탐사 시행의 절반에서 UGV 코가 장애물에 닿아 멈췄다 (14장 12절).
+        #    'robot_gps' 가 없는 옛 몸(SummitXlSteelSensorized 가 아닌 것)은 'gps' 로 돌아간다.
+        self.gps = self.__robot.getDevice('robot_gps') or self.__robot.getDevice('gps')
         if self.gps:
             self.gps.enable(self.__timestep)
 

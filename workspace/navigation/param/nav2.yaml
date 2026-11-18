@@ -78,6 +78,12 @@ controller_server:
       trans_stopped_velocity: 0.0
       short_circuit_trajectory_evaluation: True
       stateful: True
+      # 🚨 BaseObstacle 을 유지한다. ObstacleFootprint 로 바꿔 봤다가 되돌렸다 (2026-11-18, 밤샘9).
+      #    점수 척도(62)가 중심 칸 기준으로 맞춰져 있어서, footprint 전체 비용을 보면 움직이는
+      #    궤적이 전부 제자리보다 비싸진다 — DWB 가 0 에 가까운 명령만 내고 "진행 없음" 이 2~3배,
+      #    UGV 이동이 276 -> 101 m 로 줄었다. 몸이 닿는 문제는 드라이버가 몸 중심을 base_link 로
+      #    내게 고친 것(robot_driver.py)으로 대부분 풀린다 — 코가 중심에서 0.36 m 라 내접 0.29 m 와
+      #    0.07 m 차이뿐이다.
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
       BaseObstacle.scale: 62.0
       PathAlign.scale: 32.0
@@ -109,7 +115,7 @@ local_costmap:
       width: 6
       height: 6
       resolution: 0.1
-      footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
+      footprint: "[[-0.36, -0.29], [-0.36, 0.29], [0.36, 0.29], [0.36, -0.29]]"   # 실제 몸 0.72 x 0.58 (기본 PROTO boundingObject). 2026-11-18 전에는 0.70 x 0.50
       # 🚨 static layer 를 지역 코스트맵에도 넣는다. DWB 는 **지역** 코스트맵으로 충돌을
       #    검사하는데, 이게 비어 있으면 로봇이 벽을 못 본 채 달린다. 실측(arena_s3, 융합 시행):
       #    UGV 가 문틀에 끼여 자기 칸 비용 99(전역)인데 지역 코스트맵은 100% 0 이었고,
@@ -166,7 +172,7 @@ global_costmap:
       robot_base_frame: base_link
       transform_tolerance: 10.0       # 🌟 [추가] 코스트맵 TF 지연 1초 허용
       use_sim_time: True
-      footprint: "[[-0.35, -0.25], [-0.35, 0.25], [0.35, 0.25], [0.35, -0.25]]"
+      footprint: "[[-0.36, -0.29], [-0.36, 0.29], [0.36, 0.29], [0.36, -0.29]]"   # 실제 몸 0.72 x 0.58 (기본 PROTO boundingObject). 2026-11-18 전에는 0.70 x 0.50
       lethal_cost_threshold: 60
       resolution: 0.1
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
